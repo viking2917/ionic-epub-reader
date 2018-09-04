@@ -1,0 +1,22 @@
+<!-- menu displayed after highlighting text, roughly modeled after the Kindle selection menu -->
+<!-- kindle options: highlight colors. x (delete). Note. Copy. Search. Translate. search book / web. -->
+
+<!-- style it ios style always -->
+<ion-popover-view class="fit platform-ios">
+  <ion-content >
+    <div class="button-bar">
+      <!-- leave the highlight after selection -->
+      <button ng-click="popoverConfirmHighlight()" class="button icon ion-checkmark-circled"></button>
+
+      <!-- delete the highlight -->
+      <button ng-if="cfiRange" ng-click="popoverDeleteHighlight()" class="button icon ion-close-circled"></button> 
+
+      <!-- add a note -->
+      <!-- <button ng-click1="popoverAddNote()" class="button icon ion-android-create"></button>    -->
+
+      <button ng-click="popoverSearch('google')"    class="button icon" style="display: flex;"><i class="custom-icon ion-google"></i></button>
+      <button ng-click="popoverSearch('wikipedia')" class="button icon" style="display: flex;"><i class="custom-icon ion-wikipedia"></i></button>
+      
+    </div>
+  </ion-content>
+</ion-popover-view>

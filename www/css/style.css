@@ -1,0 +1,44 @@
+/* Empty. Add your own CSS if you like */
+
+ion-popover-view.fit {
+  height: auto !important;
+  width: auto !important;
+  min-width: 30px;
+}
+
+ion-popover-view.fit ion-content {
+  position: relative !important;
+}
+
+.platform-android ion-popover-view.fit {
+  margin-top: 10px !important;
+}
+
+.button-bar > .button {
+    padding: 0 10px !important;   /* this fixes button icons in the highlighting popover menu */
+}
+
+.custom-icon {
+    width: 26px;
+    height: 26px;
+    margin-top: -2px;
+    opacity: 0.9;
+}
+
+/* .ion-wikipedia:before { */
+/*     /\* content: ""; *\/ */
+/*     /\* content: url(../img/WikipediaW.svg); *\/ */
+/*     /\* background-image: url(../img/WikipediaW.svg); *\/ */
+/*     width: 24px; */
+/*     height: 32px; */
+/*     padding: 6px 0px 0px 0px !important; */
+/*     opacity: 0.9; */
+/* } */
+
+.ion-wikipedia {
+    content: url(../img/WikipediaW.svg);
+}
+
+.ion-google {
+    content: url(../img/_ionicons_svg_logo-google.svg);
+}

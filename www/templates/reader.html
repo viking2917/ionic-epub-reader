@@ -1,0 +1,185 @@
+<div class="app" data-tap-disabled="true">
+
+  <div data-word="{{dictionary.word}}" ng-show="dictionary.word||dictionary.error" class="dictionary-wrapper"> 
+    <div class="dictionary">
+      <div class="definition">
+  	<div class="word">{{dictionary.word}}</div>
+  	<div class="meanings">
+  	  <div class="info">{{dictionary.info}}</div>
+  	  <div class="meaning" ng-if="dictionary.error">{{dictionary.error}}</div>
+  	  <div class="meaning" ng-repeat="meaning in dictionary.meanings">
+  	    <div class="text" ng-if="meaning.text">{{meaning.text}}</div>
+  	    <div class="example" ng-if="meaning.example">{{meaning.example}}</div>
+  	  </div>
+  	  <div class="credit" ng-if="dictionary.credit">{{dictionary.credit}}</div>
+  	</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sidebar-wrapper-left" ng-if="isBookLoaded()" ng-click="doSidebar()" ng-class="{'out' : !state.sidebar}"></div>
+  <div class="sidebar-wrapper" ng-class="{'out' : !state.sidebar}">
+    <div class="sidebar">
+      <div class="tab-list">
+        <a data-tab="toc" class="reader-item" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}">
+          <i class="icon material-icons">list</i>
+        </a>
+	 
+        <a data-tab="search" class="reader-item" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}">
+          <i class="icon material-icons">search</i>
+        </a>
+        <a data-tab="info" class="reader-item" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}">
+          <i class="icon material-icons">info</i>
+        </a>
+        <a data-tab="settings" class="reader-item" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}">
+          <i class="icon material-icons">settings</i>
+        </a>
+      </div>
+      <div class="tab-container">
+        <div class="tab" data-tab="toc" ng-show="state.activeTab === 'toc'">
+          <div class="toc-list">
+	    <a ng-repeat="item in navigation.toc track by $index"
+	       class="reader-item" ng-click="gotoTocItem(item.href, $event)" ng-bind-html="item.labelHtml"
+	       data-loc="{{item.href}}"
+	       ng-class="{'active' : item.active}"></a>
+	  </div>
+        </div>
+        <div class="tab search" data-tab="search" ng-show="state.activeTab === 'search'">
+          <div class="search-bar">
+            <input type="text" autocomplete="off" placeholder="Search book..." class="search-box" ng-model="state.searchQuery">
+            <button class="search-button" ng-click="onSearchClick()">
+	      <i class="icon material-icons">search</i>
+            </button>
+          </div>
+          <div class="search-results">
+	    <a ng-repeat="result in state.searchResults track by $index"
+	       class="reader-item" ng-click="onResultClick(result.cfi)"><div class="text">{{result.excerpt}}</div></a>
+	  </div>
+        </div>
+        <div class="tab info" data-tab="info" ng-show="state.activeTab === 'info'">
+          <div class="cover-wrapper">
+            <img src="{{metadata.cover}}" alt="" class="cover">
+          </div>
+          <div class="title">{{metadata.title}}</div>
+          <div ng-if="metadata.series" class="series-info">
+            <span class="series-name">{{metadata.series.name</span>
+            <span class="divider"> - </span>
+            <span class="series-index"{{metadata.series.index></span>
+          </div>
+          <div class="author">{{metadata.author}}</div>
+          <div class="description" ng-bind-html="metadata.descriptionhtml"></div>
+        </div>
+        <div class="tab settings" data-tab="settings" ng-show="state.activeTab === 'settings'">
+          <div class="setting">
+            <div class="setting-label">Themes</div>
+            <div class="setting-content theme chips" data-chips="theme">
+	      <div ng-repeat="atheme in settings.themes" ng-click="setTheme(atheme)" class="theme chip" style="background: {{atheme.bg}}; color: {{atheme.fg}}"
+		   data-them="{{atheme.bg + ':' + atheme.fg}}"
+		   data-test="{{theme.bg + ':' + theme.fg}}"
+		   ng-class="{'active' : (atheme.bg == theme.bg) && (atheme.fg == theme.fg)}"
+		   >A</div>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-label">Font</div>
+            <div class="setting-content font chips" data-chips="font">
+	      <div ng-repeat="font in settings.fonts" ng-click="setFont(font.style)" class="font chip" style="font-family: {{font.style}};"
+		   data-font="{{font}}"
+		    ng-class="{'active' : (font.style == theme.ff)}">{{font.name}}</div>
+	    </div>
+	  </div>
+	  <div class="setting">
+            <div class="setting-label">Font Size</div>
+            <div class="setting-content font-size chips" data-chips="font-size">
+	      <div ng-repeat="font in settings.fontsizes" ng-click="setFontSize(font)" class="size chip" style="font-size: {{font}}pt" 
+		   ng-class="{'active' : (font == theme.fs)}">{{font}}</div>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-label">Line Spacing</div>
+	    <div class="setting-content line-spacing chips" data-chips="line-spacing">
+	      <div ng-repeat="lh in settings.lineSpacings" ng-click="setLineSpacing(lh)" class="size chip"
+		   ng-class="{'active' : (lh == theme.lh)}"
+		   >{{lh}}</div>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-label">Margin</div>
+            <div class="setting-content margin chips" data-chips="margin">
+	      <div ng-repeat="margin in settings.margins" ng-click="setMargin(margin)" class="size chip"
+		   data-margin="{{theme.m}}"
+		   data-test="{{margin}}"
+		   ng-class="{'active' : (margin == theme.m)}">{{margin}}px</div>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-label">Fullscreen</div>
+            <div class="setting-content">
+	      <a ng-click="doFullscreen()">Fullscreen</a>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-label">Reset</div>
+            <div class="setting-content">
+	      <a href1="javascript:void(0);" ng-click="doReset()">Reset All</a>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-label">About</div>
+            <div class="setting-content">
+	      This is an Ionic / Angular based ePub viewer written by Mark Watkins. It is derived from <a href="https://github.com/geek1011/ePubViewer">ePubViewer v3.0.0</a>, written by <a href="https://geek1011.github.io">Patrick Gaskin</a>, but heavily re-written to make it Ionic/Angular friendly. 
+	      <br />
+	      <br /> This app requires Microsoft Edge 15+, Mozilla Firefox 50+, Chrome 50+, or Safari 10+.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="readerBar">
+    <div class="left">
+      <button class="open" ng-click="doOpenBook()">
+        <i class="icon material-icons">file_upload</i>
+      </button>
+    </div>
+    <div class="title">
+      <span class="book-title">{{metadata.title}}</span>
+      <span class="divider"> - </span>
+      <span class="book-author">{{metadata.author}}</span>
+    </div>
+    <div class="right" ng-show="state.book">
+      <button class="sidebar-button" ng-click="doSidebar()">
+        <i class="icon material-icons">menu</i>
+      </button>
+    </div>
+  </div>
+   
+  <div class="book">
+    <div ng-if="!isBookLoaded()" class="empty-wrapper">
+      <div class="empty">
+	<div class="app-name">ePubViewer</div>
+	<div class="message">
+	  <a ng-click="doOpenBook()" class="big-button">Open a Book</a>
+	</div>
+      </div>
+    </div>
+  </div>
+  <div ng-show="state.book" class="readerBar">
+    <div class="left">
+      <button class="prev" ng-click="prevPage()">
+        <i style="font-size: 10vh;" class="icon material-icons">chevron_left</i>
+      </button>
+    </div>
+    <div ng-click="locationClick()" class="loc">{{state.locationString}}</div>
+    <div class="right">
+      <button class="next" ng-click="nextPage()">
+        <i style="font-size: 10vh;" class="icon material-icons">chevron_right</i>
+      </button>
+    </div>
+  </div>
+
+   <div id="extras">
+    <ul id="highlights"></ul>
+  </div>
+  </div>
