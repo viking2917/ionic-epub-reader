@@ -6,16 +6,16 @@
   <ion-content >
     <div class="button-bar">
       <!-- leave the highlight after selection -->
-      <button ng-click="popoverConfirmHighlight()" class="button icon ion-checkmark-circled"></button>
+      <button ng-click="highlightMenuConfirmHighlight()" class="button icon ion-checkmark-circled"></button>
 
       <!-- delete the highlight -->
-      <button ng-if="cfiRange" ng-click="popoverDeleteHighlight()" class="button icon ion-close-circled"></button> 
+      <button ng-if="cfiRange" ng-click="highlightMenuDeleteHighlight()" class="button icon ion-close-circled"></button> 
 
       <!-- add a note -->
       <!-- <button ng-click1="popoverAddNote()" class="button icon ion-android-create"></button>    -->
 
-      <button ng-click="popoverSearch('google')"    class="button icon" style="display: flex;"><i class="custom-icon ion-google"></i></button>
-      <button ng-click="popoverSearch('wikipedia')" class="button icon" style="display: flex;"><i class="custom-icon ion-wikipedia"></i></button>
+      <button ng-click="highlightMenuSearch('google')"    class="button icon" style="display: flex;"><i class="custom-icon ion-google"></i></button>
+      <button ng-click="highlightMenuSearch('wikipedia')" class="button icon" style="display: flex;"><i class="custom-icon ion-wikipedia"></i></button>
       
     </div>
   </ion-content>

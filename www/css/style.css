@@ -42,3 +42,43 @@ ion-popover-view.fit ion-content {
 .ion-google {
     content: url(../img/_ionicons_svg_logo-google.svg);
 }
+
+.pager-size {   
+    font-size: 7vh;
+}
+
+.button .icon .reader-big-button-icon:before, 
+.button.icon.reader-big-button-icon:before, 
+.button.icon-left.reader-big-button-icon:before, 
+.button.icon-right.reader-big-button-icon:before {
+    font-size: 50px !important;
+    line-height: 50px !important;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-bottom: 5px;
+}
+
+.left .button .icon .reader-big-button-icon:before, 
+.left .button.icon.reader-big-button-icon:before, 
+.left .button.icon-left.reader-big-button-icon:before, 
+.left .button.icon-right.reader-big-button-icon:before {
+    float: left;
+    left: 0
+}
+.right .button .icon .reader-big-button-icon:before, 
+.right .button.icon.reader-big-button-icon:before, 
+.right .button.icon-left.reader-big-button-icon:before, 
+.right .button.icon-right.reader-big-button-icon:before {
+    float: right;
+    right: 0;
+
+}
+
+.right .button:before {
+    float: right;
+}
+
+.ionicon-x-large:before {
+    font-size: x-large !important;
+}

@@ -6,14 +6,47 @@
 
 angular.module('readerDemo', ['ionic', 'epubreader'])
 
-.controller('ReaderCtrl', function($scope, $ionicActionSheet, $ionicPopover) {
+.controller('ReaderCtrl', function($scope, $rootScope, $ionicActionSheet, $ionicPopover) {
 	
+    $rootScope.$on('epubReaderSaveSettings', function (event, data) {
+    	console.log('save settings requested', event, JSON.parse(data.settings));
+    });
+
+    $rootScope.$on('epubReaderSaveLocation', function (event, data) {
+    	console.log('save position requested', event, data.position);
+    });
+    
+    $rootScope.$on('epubReaderNextPage', function (event, data) {
+    	console.log('paging (next)', event, data);
+    });
+
+    $rootScope.$on('epubReaderPrevPage', function (event, data) {
+    	console.log('paging (prev)', event, data);
+    });
+
+    $rootScope.$on('epubReaderSetLocation', function (event, data) {
+    	console.log('set location', event, data);
+    });
+
+    $rootScope.$on('epubReaderTextSelected', function (event, data) {
+    	console.log('text selected', event, data);
+    });
+
+    $rootScope.$on('epubReaderHighlightSaveRequested', function (event, data) {
+    	console.log('highlight save requested', event, data);
+    });
+
+    $rootScope.$on('epubReaderHighlightDeleteRequested', function (event, data) {
+    	console.log('highlight save requested', event, data);
+    });
+
+
     
 })
 
 .run(function($ionicPlatform, $rootScope) {
 
-    $rootScope.platform = 'android';
+    // $rootScope.platform = 'android';
 
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard

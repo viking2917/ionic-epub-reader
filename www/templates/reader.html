@@ -21,19 +21,13 @@
   <div class="sidebar-wrapper" ng-class="{'out' : !state.sidebar}">
     <div class="sidebar">
       <div class="tab-list">
-        <a data-tab="toc" class="reader-item" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}">
-          <i class="icon material-icons">list</i>
-        </a>
-	 
-        <a data-tab="search" class="reader-item" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}">
-          <i class="icon material-icons">search</i>
-        </a>
-        <a data-tab="info" class="reader-item" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}">
-          <i class="icon material-icons">info</i>
-        </a>
-        <a data-tab="settings" class="reader-item" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}">
-          <i class="icon material-icons">settings</i>
-        </a>
+	<!-- <div class="button-bar"> -->
+	<a data-tab="toc" class="reader-item button button-stable icon ion-ios-list-outline" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}"></a>
+        <a data-tab="search" class="reader-item button button-stable icon ion-search" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}"></a>
+        <a data-tab="info" class="reader-item button button-stable icon ion-information-circled" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}"></a>
+        <a data-tab="settings" class="reader-item button button-stable icon ion-gear-a" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}"></a>
+	<!-- </div> -->
+
       </div>
       <div class="tab-container">
         <div class="tab" data-tab="toc" ng-show="state.activeTab === 'toc'">
@@ -47,9 +41,7 @@
         <div class="tab search" data-tab="search" ng-show="state.activeTab === 'search'">
           <div class="search-bar">
             <input type="text" autocomplete="off" placeholder="Search book..." class="search-box" ng-model="state.searchQuery">
-            <button class="search-button" ng-click="onSearchClick()">
-	      <i class="icon material-icons">search</i>
-            </button>
+            <button class="search-button" ng-click="onSearchClick()"><i class="icon ion-search ionicon-x-large"></i></button>
           </div>
           <div class="search-results">
 	    <a ng-repeat="result in state.searchResults track by $index"
@@ -85,7 +77,7 @@
             <div class="setting-content font chips" data-chips="font">
 	      <div ng-repeat="font in settings.fonts" ng-click="setFont(font.style)" class="font chip" style="font-family: {{font.style}};"
 		   data-font="{{font}}"
-		    ng-class="{'active' : (font.style == theme.ff)}">{{font.name}}</div>
+		   ng-class="{'active' : (font.style == theme.ff)}">{{font.name}}</div>
 	    </div>
 	  </div>
 	  <div class="setting">
@@ -139,9 +131,7 @@
 
   <div class="readerBar">
     <div class="left">
-      <button class="open" ng-click="doOpenBook()">
-        <i class="icon material-icons">file_upload</i>
-      </button>
+      <button  ng-click="doOpenBook()" class="button icon right1 ion-ios-cloud-upload"></button>
     </div>
     <div class="title">
       <span class="book-title">{{metadata.title}}</span>
@@ -149,12 +139,10 @@
       <span class="book-author">{{metadata.author}}</span>
     </div>
     <div class="right" ng-show="state.book">
-      <button class="sidebar-button" ng-click="doSidebar()">
-        <i class="icon material-icons">menu</i>
-      </button>
+      <button ng-click="doSidebar()" class="button icon right ion-android-menu"></button>
     </div>
   </div>
-   
+  
   <div class="book">
     <div ng-if="!isBookLoaded()" class="empty-wrapper">
       <div class="empty">
@@ -167,19 +155,15 @@
   </div>
   <div ng-show="state.book" class="readerBar">
     <div class="left">
-      <button class="prev" ng-click="prevPage()">
-        <i style="font-size: 10vh;" class="icon material-icons">chevron_left</i>
-      </button>
+      <button ng-click="prevPage()" class="button icon ion-ios-arrow-back reader-big-button-icon"></button>
     </div>
     <div ng-click="locationClick()" class="loc">{{state.locationString}}</div>
     <div class="right">
-      <button class="next" ng-click="nextPage()">
-        <i style="font-size: 10vh;" class="icon material-icons">chevron_right</i>
-      </button>
+      <button ng-click="nextPage()" class="button icon ion-ios-arrow-forward reader-big-button-icon"></button>
     </div>
   </div>
 
-   <div id="extras">
-    <ul id="highlights"></ul>
+  <div id="extras">
+    <!-- <ul id="highlights"></ul> -->
   </div>
-  </div>
+</div>

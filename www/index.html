@@ -5,14 +5,16 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <title></title>
 
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
     <link href="https://fonts.googleapis.com/css?family=Arbutus+Slab" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i" rel="stylesheet">
 
     <link rel="stylesheet" href="lib/normalize.min.css">
     <link rel="manifest" href="manifest.json">
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <!-- was version 1.7, which generated some weird issue with ionicPopup. -->
+    <!-- e.g.: https://stackoverflow.com/questions/34909067/error-type-property-cant-be-changed-getting-error-while-using-ngtaginput-li -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
     <!-- un-comment this code to enable service worker
     <script>
@@ -48,7 +50,7 @@
   <body ng-app="readerDemo">
     <ion-pane ng-controller="ReaderCtrl">
       <ion-content overflow-scroll="true">
-    	<epubreader></epubreader>
+    	<epubreader src="https://standardebooks.org/ebooks/rafael-sabatini/captain-blood/dist/rafael-sabatini_captain-blood.epub"></epubreader>
       </ion-content>
     </ion-pane>
   </body>

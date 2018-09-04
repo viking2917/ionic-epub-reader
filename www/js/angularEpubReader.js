@@ -7,13 +7,25 @@
  * @version: 1.0.0
  */
 
-/* document paths not taken:
-   e.g. annotator.js - couldn't get to work on mobile - 1.x version the touch plugin doesn't seem to work, 2.x branch seems dead and has no such plugin 
-   hypothesis = cool product but I couldn't figure out how to untangle it for my purposes, and anyway seems oriented towards open web and a fully integrated reading ux, not a separate annotator.
+/* a directive for an ionic/angular v1 eReader for reading epub files. 
+   leverages the epub.js component from future press.
+   also leverages a heavily hacked up version of [Patrick G](https://github.com/geek1011)'s excellent [ePubViewer](https://github.com/geek1011/ePubViewer). 
+   mistakes obviously are all mine.
+
+   also introduces an annotation UI. The directive manages the integration with epub.js highlighting system, as well as providing an annotation UI. 
+   major lifecycle events generate angular events, which an external application can watch for, for things such as serialization or coordination with UI states
+
 */
 
-/* for integration: would want the directive to handle all the annotation UI. And emit events or take callbacks to handle lifecycle events like adding/removing annotations, etc */
 
+/* paths not taken: (i.e. why did I build my own instead of using something out there:
+
+   annotator.js: I couldn't get to work on mobile - in the 1.x version the touch plugin doesn't seem to work, 2.x branch seems dead and has no such plugin. 
+     Neither branch has much activity, suggesting dead code. 
+   hypothesis: cool product but I couldn't figure out how to untangle it for my purposes - I couldn't figure out the integration between the annotator and the reader, 
+       and anyway seems very oriented towards open web content and public commentary, and a fully integrated reading ux, not a separate annotator. 
+       My use case, books and social reading, I just couldn't figure out how to untangle it.
+*/
 
 angular.module('epubreader', [])
 .directive('epubreader', function($ionicPopup, $ionicPopover, $ionicBody, $document) {
@@ -27,13 +39,20 @@ angular.module('epubreader', [])
 	templateUrl: 'templates/reader.html',
 
 	controller: function($scope, $rootScope, $timeout, $location, $q, $sce){
+	    
+	    /* initialize variables */
 	    $scope.state = {error : false, sidebar : false, activeTab : 'toc'};
-	    $scope.platform = 'ios';
-
+	    // $scope.platform = 'ios';
 	    $scope.metadata = {};
+
+	    /********************************************************************************/
+	    /*                                 Reader Styling                               */
+	    /********************************************************************************/
+
 	    $scope.settings = {}; 
 	    $scope.settings.themes = [
-		{bg: "#fff", fg: "#000"}, {bg: "#000", fg: "#fff"}, {bg: "#333", fg: "#eee"}, {bg: "#f5deb3", fg: "#000"}, {bg: "#111", fg: "#f5deb3"}, {bg: "#111b21", fg: "#e8e8e8"}
+		{bg: "#fff", fg: "#000"}, {bg: "#000", fg: "#fff"}, {bg: "#333", fg: "#eee"}, {bg: "#f5deb3", fg: "#000"}, 
+		{bg: "#111", fg: "#f5deb3"}, {bg: "#111b21", fg: "#e8e8e8"}
 	    ];
 	    $scope.settings.fontsizes = [8,9,10,11,12,14,16,18];
 	    $scope.settings.lineSpacings = [1, 1.2, 1.4, 1.6, 1.8, 2, 2.3, 2.6, 3];
@@ -52,10 +71,12 @@ angular.module('epubreader', [])
 		fs: "11", lh: "1.6", ta: "justify", m: "5"
 	    };
 
-	    var highlights = document.getElementById('highlights');
-
 	    $scope.saveSettingsToStorage = function () {
 		localStorage.setItem(`ePubViewer:settings`, JSON.stringify($scope.theme));
+		$rootScope.$broadcast('epubReaderSaveSettings', {
+		    settings: JSON.stringify($scope.theme)
+		});
+		
 	    };
 	  
 	    $scope.loadSettingsFromStorage = function () {
@@ -137,6 +158,18 @@ angular.module('epubreader', [])
 		$scope.applyTheme(true);
 	    };
 
+	    $scope.loadFonts = function() {
+		$scope.state.rendition.getContents().forEach(c => {
+		    ["https://fonts.googleapis.com/css?family=Arbutus+Slab",
+		     "https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i"
+		    ].forEach(url => {
+			let el = c.document.body.appendChild(c.document.createElement("link"));
+			el.setAttribute("rel", "stylesheet");
+			el.setAttribute("href", url);
+		    });
+		});
+	    };
+	    
 	    $scope.setLineSpacing = function (size) {
 		$scope.theme.lh = size;
 		$scope.applyTheme(true);
@@ -149,6 +182,10 @@ angular.module('epubreader', [])
 		$scope.theme.ff = font;
 		$scope.applyTheme(true);
 	    };
+
+	    /********************************************************************************/
+	    /*                                 Metadata loading                             */
+	    /********************************************************************************/
 
 	    $scope.onMetadataLoaded = function (metadata) {
 		$scope.metadata.title = metadata.title.trim();
@@ -165,14 +202,13 @@ angular.module('epubreader', [])
 	    };
 
 	    $scope.onBookCoverLoaded = function (url) {
-		if(!url) {
-		    return false;
-		}
+		if(!url) return false;
 		
 		if (!$scope.state.book.archived) {
 		    $scope.metadata.cover = url;
 		    return;
 		}
+
 		$scope.state.book.archive.createUrl(url).then(url => {
 		    $scope.metadata.cover = url;
 		}).catch(err => $scope.fatal("error loading cover", err));
@@ -193,10 +229,65 @@ angular.module('epubreader', [])
 		$scope.navigation = nav;
 	    };
 
-	    $scope.onRenditionRelocatedSavePos = function (event) {
-		localStorage.setItem(`${$scope.state.book.key()}:pos`, event.start.cfi);
+
+	    /********************************************************************************/
+	    /*                      Reader Location / Paging Management                     */
+	    /********************************************************************************/
+	    
+	    $scope.nextPage = function () {
+		$rootScope.$broadcast('epubReaderNextPage', {});
+		$scope.state.rendition.next();
+	    };
+
+	    $scope.prevPage = function () {
+		$rootScope.$broadcast('epubReaderPrevPage', {});
+		$scope.state.rendition.prev();		
 	    };
 	    
+	    $scope.locationClick = function () {
+		try {
+		    $ionicPopup.prompt({
+			title: 'Location', inputType: 'text', template: `Location to go to (up to ${$scope.state.book.locations.length()})?`})
+			.then(function(answer) {
+			    if (!answer) return;
+			    answer = answer.trim();
+			    if (answer == "") return;
+			    
+			    let parsed = parseInt(answer, 10);
+			    if (isNaN(parsed) || parsed < 0) throw new Error("Invalid location: not a positive integer");
+			    if (parsed > $scope.state.book.locations.length()) throw new Error("Invalid location");
+			    
+			    let cfi = $scope.state.book.locations.cfiFromLocation(parsed);
+			    if (cfi === -1) throw new Error("Invalid location");
+			    
+			    $rootScope.$broadcast('epubReaderSetLocation', {
+			    	location: parsed,
+				cfiRange: cfi,
+			    	bookLength: $scope.state.book.locations.length()
+			    });
+			    $scope.state.rendition.display(cfi);
+			});
+		}
+		catch (err) {
+		    $ionicPopup.alert({title: "Error", content: '<p>' + err.toString() + '</p>'});
+		}
+	    };
+
+	    $scope.gotoTocItem = function (href, event) {
+		console.log("tocClick", href, $scope.state.book.canonical(href));
+		$scope.state.rendition.display(href).catch(err => console.warn("error displaying page", err));
+		$scope.doSidebar();
+	    };
+
+	    // store position in local storage so we come back here on reload.
+	    $scope.onRenditionRelocatedSavePos = function (event) {
+		localStorage.setItem(`${$scope.state.book.key()}:pos`, event.start.cfi);
+		$rootScope.$broadcast('epubReaderSaveLocation', {
+		    position: event.start.cfi
+		});
+	    };
+	    
+	    // reload location on reload of book
 	    $scope.onRenditionStartedRestorePos = function (event) {
 		try {
 		    let stored = localStorage.getItem(`${$scope.state.book.key()}:pos`);
@@ -218,7 +309,7 @@ angular.module('epubreader', [])
 		}   
 	    };
 	    
-	    
+	    // paging on swipe events. 
 	    $scope.onRenditionDisplayedTouchSwipe = function (event) {
 		$scope.start = null
 		$scope.end = null;
@@ -229,19 +320,18 @@ angular.module('epubreader', [])
 		$scope.screenWidth = ( $scope.state.rendition && $scope.state.rendition.getContents() && $scope.state.rendition.getContents()[0]) ?
 		    $scope.state.rendition.getContents()[0].content.clientWidth : 500;
 		
-
 		const el = event.document ? event.document.documentElement : event.currentTarget.documentElement;
 		console.log( 'onRenditionDisplayedTouchSwipe' );
 		
 		el.addEventListener('touchstart', event => {
-		    console.log('touchstart');
 		    $scope.start = event.changedTouches[0];
-		    console.log('start is', $scope.start);
+		    console.log('touchstart', 'start is', $scope.start);
 		});
+		
 		el.addEventListener('touchmove', event => {
 		    console.log('touchmove');
 		    $scope.moving = true;
-
+		    
 		    // it seems as though onRenditionDisplayedTouchSwipe may get called asynchronously and perhaps after start has already been set.
 		    // This makes touchmoves also set start if it is missing, as mouse down won't do anything without it. 
 		    if(!$scope.start) {
@@ -252,9 +342,7 @@ angular.module('epubreader', [])
 			$scope.listening = true;
 			el.addEventListener('touchend', event => {
 			    $scope.end = event.changedTouches[0];
-			    console.log('touchend', $scope.end);
-			    
-			    console.log('start is', $scope.start);
+			    console.log('touchend', $scope.end, 'start is', $scope.start);
 			    if($scope.start && $scope.moving) {
 				let hr = ($scope.end.screenX - $scope.start.screenX) / $scope.screenWidth;
 				let vr = ($scope.end.screenY - $scope.start.screenY) / el.getBoundingClientRect().height;
@@ -271,24 +359,12 @@ angular.module('epubreader', [])
 			});
 		    }
 		});
-	
 	    };
-	    
-	    $scope.onRenditionRelocated = function (event) {
-		try {$scope.doDictionary(null);} catch (err) {}
-		try {
-		    $scope.navigation.toc.forEach(function (i, item) {
-			item.active = ($scope.state.book.canonical(item.href) == $scope.state.book.canonical(event.start.href));
-		    });
-		} catch (err) {
-		    $scope.fatal("error updating toc", err);
-		}
-	    };
-	    
+
+	    // clicks at far left and right of screen initiate paging.
 	    $scope.onRenditionClick = function (event) {
 		try {
 		    console.log('onRenditionClick');
-
 		    if (event.target.tagName.toLowerCase() == "a" && event.target.href) return;
 		    if (event.target.parentNode.tagName.toLowerCase() == "a" && event.target.parentNode.href) return;
 		    if (window.getSelection().toString().length !== 0) return;
@@ -325,71 +401,65 @@ angular.module('epubreader', [])
 		return false;
 	    };
 	    
-
-	    // Array.from(document.getElementsByTagName('iframe')).forEach(function(theI) {
-	    // 	console.log('data tap on this iframe turned off');
-	    // 	theI.setAttribute("data-tap-disabled", true); // stop IONIC from killing the click events on these.
-	    // });
-
-	    $scope.openPopover = function($event, element) {
-		if($scope.popover) {
-		    $scope.popover.remove();
-		    $scope.popover = false;
+	    // on paging/relocation, wipe the dictionary and update the active TOC entry.
+	    $scope.onRenditionRelocated = function (event) {
+		try {$scope.doDictionary(null);} catch (err) {}
+		try {
+		    $scope.navigation.toc.forEach(function (i, item) {
+			item.active = ($scope.state.book.canonical(item.href) == $scope.state.book.canonical(event.start.href));
+		    });
+		} catch (err) {
+		    $scope.fatal("error updating toc", err);
 		}
+	    };
+
+
+	    /********************************************************************************/
+	    /*                        Selection / Highlight Handling                        */
+	    /********************************************************************************/
+
+	    $scope.onRenditionSelected =  function(cfiRange, contents) {
+		console.log('onRenditionSelected', cfiRange); // , contents);
 		
-		$ionicPopover.fromTemplateUrl('templates/highlightMenu.html', {
-    		    scope: $scope,
-		}).then(function(popover) {
-    		    $scope.popover = popover;
-    		    $scope.popover.show($event);
-    		    // $scope.popover.show(element); // triggering on the element doesn't take into account the column scrolling of epub viewer so it comes in the wrong place.
-		    if(1&&$scope.popoverUp) {
-			$timeout( function () {
-			    if($scope.popover) {
-				$scope.popover.modalEl.classList.add("popover-bottom");
-			    }
-			}, 100);
-		    }
-		    
+		// first time we pick a cfi range, dangling is true, so that if we click out of the menu, it will get deleted,
+		// but if a new one is selected, it's not necessary as it's deleted here.
+		$scope.isCFIDangling = true;							   
+		if($scope.cfiRange) {   		// if we are editing a current range, delete the existing one, replace with new one
+		    console.log('deleting edited range', $scope.cfiRange);
+		    $scope.state.rendition.annotations.remove($scope.cfiRange);
+		    $scope.isCFIDangling = false;
+		}
+
+		$scope.cfiRange = cfiRange;
+		$scope.contents = contents;
+		var ev2 = $scope.eFromCFIRange(cfiRange, contents);
+		$scope.openHighlightMenu(ev2,contents.range(cfiRange).startContainer.parentElement );
+		
+		// generate highlight event.
+		$scope.state.book.getRange($scope.cfiRange).then(function (range) {
+		    text = range.toString();
+		    $rootScope.$broadcast('epubReaderTextSelected', {
+			text: text, cfiRange: $scope.cfiRange, range: range});
 		});
-		
-		
-		
 	    };
 
-	    $scope.closePopover = function() {
-    		$scope.popover.hide();
-		$ionicBody.removeClass('popover-open');  // for some reason this is getting left hanging around....
-	    };
-	    
-	    
-	    $scope.$on('$destroy', function() {
-		console.log('destroyed');
-		$scope.popover.remove();
-	    });
-
-	    // Execute action on hidden popover
+	    // If the user clicks out of the highlight menu without picking anything, need to erase the highlight
 	    $scope.$on('popover.hidden', function() {
-		
-		// if the popup is dismissed with no action, clear the highlight.
-		console.log('hidden');
-		if($scope.cfiRange) {   // actions will set this range to false. if it's here, it's dangling.
+		if($scope.cfiRange && $scope.isCFIDangling) {   // actions will set this range to false. if it's here, it's dangling.
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
 			text = range.toString();
-			// alert('erasing temp highlight: ' + text);
 			console.log('erasing temp highlight', $scope.cfiRange);
-			// $scope.state.rendition.annotations.remove($scope.cfiRange);
-			if($scope.contents) {
-			    $scope.contents.window.getSelection().removeAllRanges();
-			}
+			if($scope.contents) $scope.contents.window.getSelection().removeAllRanges();
 			$scope.cfiRange = false;
 		    });
 		}
 	    });
 	    
+	    // create a fake event to anchor the popup, as the real event has gotten eaten by ionic.
 	    $scope.eFromCFIRange = function (cfiRange, contents) {
 		var range = contents.range(cfiRange);
 		var rect = range.getBoundingClientRect();
+		// abortive logic to make the event pop above or below the highlighted text. but caught up in complications of column-based scrolling. doesn't work.
 		// var midy = (rect.top + rect.bottom) / 2.0;
 		// var left = rect.left;
 		// var popoverY = contents.content.clientHeight / 2.0;
@@ -405,8 +475,6 @@ angular.module('epubreader', [])
 		//     $scope.popoverUp = false;
 		//     //$scope.popover.modalEl.classList.remove("popover-bottom");
 		// }
-
-
 		// while( (left > contents.content.clientWidth) ) {  // display is in columns; get to screen space, not document space, by subtracting off screen widths til we get there.
 		//     left = left - contents.content.clientWidth;
 		// }
@@ -414,17 +482,18 @@ angular.module('epubreader', [])
 		var ev2 = {
 		    target : {
 			getBoundingClientRect : () => {
-			    let foo = range.getBoundingClientRect();
+			    let foo = range.getBoundingClientRect();   // create a copy of this so I can edit it. 
 			    let bar = {top: foo.top, left: foo.left, width: foo.width, height: foo.height};
 
-			    while( (bar.left > contents.content.clientWidth) ) {  // display is in columns; get to screen space, not document space, by subtracting off screen widths til we get there.
+			    // display is in columns; get to screen space, not document space, by subtracting off screen widths til we get there.
+			    while( (bar.left > contents.content.clientWidth) ) { 
 				bar.left = bar.left - contents.content.clientWidth;
 			    }
 
 			    bar.top = bar.top + 40;
 			    return bar;
 				
-			    // {
+			    // return {
 			    // 	top: popoverY,
 			    // 	left: left, // -100, 
 			    // 	width:  (rect.right - rect.left), 
@@ -437,76 +506,109 @@ angular.module('epubreader', [])
 	    };
 
 
-	    $scope.popoverConfirmHighlight = function () {
-		// get text of current selection
+	    // accept the selection as a permanent highlight
+	    $scope.highlightMenuConfirmHighlight = function () {
 		if($scope.cfiRange) {
 		    let savedCFI = $scope.cfiRange;
 		    let savedContents = $scope.contents;
 		    $scope.state.rendition.annotations.highlight($scope.cfiRange, {}, 
 								 (e) => {
 							     	     console.log("highlight clicked", savedCFI, e.target);
-								     //								     $scope.cfiRange = cfiRange;
 								     $scope.cfiRange = savedCFI;
 								     var newE =  $scope.eFromCFIRange(savedCFI, savedContents);
-								     $scope.openPopover(newE, savedContents.range(savedCFI).startContainer.parentElement);
+								     $scope.openHighlightMenu(newE, savedContents.range(savedCFI).startContainer.parentElement);
 								 });
-		    var ev2 = $scope.eFromCFIRange($scope.cfiRange, $scope.contents);
-		    // $scope.saveHighlight();
 		    
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
-			text = range.toString();
-			//	$scope.closePopover();
-			alert('SAVING: ' + text);
+			
+			text = range.toString();						    // get text of current selection		
+			$ionicPopup.alert({title: 'Saving Highlight', template: text});
 
 			// generate event to pass out to generic angular app watching for it. 
-			console.log('generate create event here');
-			
+			$rootScope.$broadcast('epubReaderHighlightSaveRequested', {
+			    text: text, cfiRange: $scope.cfiRange, range: range});
+
 			// cleanup
-			$scope.contents.window.getSelection().removeAllRanges();
+			if($scope.contents) $scope.contents.window.getSelection().removeAllRanges();
 			$scope.cfiRange = false;
 			$scope.contents = false;
-			$scope.closePopover();
-
+			$scope.closeHighlightMenu();
 		    });
 		}
 		// there is no current selection, we clicked on an existing highlight most likely.
 		else {
-		    $scope.closePopover();
+		    alert('why am i here');
+		    $scope.closeHighlightMenu();
 		}
 	    };
 	   
-	    $scope.popoverDeleteHighlight = function () {
-
-		if($scope.cfiRange) {   		// if we are editing a current range, delete the existing one, replace with new one
+	    $scope.highlightMenuDeleteHighlight = function () {
+		if($scope.cfiRange) {
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
 			text = range.toString();
-			alert('Deleting: ' + text);
+			$ionicPopup.alert({title: 'Deleting Highlight', template: text});
 			console.log('deleting edited range', $scope.cfiRange);
 			$scope.state.rendition.annotations.remove($scope.cfiRange);
-
+			
 			// generate event to pass out to generic angular app watching for it. 
-			console.log('generate delete event here');
+			$rootScope.$broadcast('epubReaderHighlightDeleteRequested', {
+			    text: text, cfiRange: $scope.cfiRange, range: range});
 
 			// clear cfiRange so nothing else looks at it. 
-
 			$scope.cfiRange = false;
-			$scope.closePopover();
-			$scope.contents.window.getSelection().removeAllRanges();
-
-			
+			$scope.closeHighlightMenu();
+			if($scope.contents) $scope.contents.window.getSelection().removeAllRanges();
 		    });
 		}
 		else {
 		    alert ('trying to delete nothing');
-		    $scope.closePopover();
+		    $scope.closeHighlightMenu();
 		}
-		
-
 	    };
 
- 
-	    $scope.popoverSearch = function (engine) {
-		if($scope.cfiRange) {   		// if we are editing a current range, delete the existing one, replace with new one
+	    // ionic popover management
+	    $scope.openHighlightMenu = function($event, element) {
+		void(element); // element passed in case I can figure out to trigger over the element, which should make the ionic popover go on top or bottom as appropriate.
+		if($scope.highlightMenu) {
+		    $scope.highlightMenu.remove();
+		    $scope.highlightMenu = false;
+		}
+		
+		$ionicPopover.fromTemplateUrl('templates/highlightMenu.html', {scope: $scope})
+		    .then(function(popover) {
+    			$scope.highlightMenu = popover;
+    			$scope.highlightMenu.show($event);
+			// triggering on the element doesn't take into account the column scrolling of epub viewer so it comes in the wrong place.
+    			// $scope.highlightMenu.show(element); 
+
+			if($scope.popoverUp) {
+			    $timeout( function () {
+				if($scope.highlightMenu) {
+				    $scope.highlightMenu.modalEl.classList.add("popover-bottom"); 	    // for some reason this is left off occassionally?
+				}
+			    }, 100);
+			}
+		    });
+	    };
+
+	    $scope.closeHighlightMenu = function() {
+    		$scope.highlightMenu.hide();
+		$ionicBody.removeClass('popover-open');  // for some reason this is getting left hanging around....
+	    };
+	    
+	    
+	    $scope.$on('$destroy', function() {
+		console.log('destroyed');
+		$scope.highlightMenu.remove();
+	    });
+
+
+	    /********************************************************************************/
+	    /*                         External Search Handling                             */
+	    /********************************************************************************/
+
+	    $scope.highlightMenuSearch = function (engine) {
+		if($scope.cfiRange) {
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
 			text = range.toString();
 			let url = false;
@@ -517,86 +619,6 @@ angular.module('epubreader', [])
 		}
 	    };
 
-	    $scope.onRenditionSelected =  function(cfiRange, contents) {
-		console.log('onRenditionSelected', cfiRange); // , contents);
-
-		if($scope.cfiRange) {   		// if we are editing a current range, delete the existing one, replace with new one
-		    console.log('deleting edited range', $scope.cfiRange);
-		    $scope.state.rendition.annotations.remove($scope.cfiRange);
-		}
-
-		$scope.cfiRange = cfiRange;
-		$scope.contents = contents;
-
-		// $scope.state.rendition.annotations.highlight(cfiRange, {}, 
-		// 					     (e) => {
-		// 					     	 console.log("highlight clicked", cfiRange, e.target);
-		// 						 $scope.cfiRange = cfiRange;
-		// 						 var newE =  $scope.eFromCFIRange(cfiRange, contents);
-		// 						 $scope.openPopover(newE);
-		// 					     });
-		
-		var ev2 = $scope.eFromCFIRange(cfiRange, contents);
-		// $scope.saveHighlight();
-		// to target to P element - doesn't work that well, position-wise.
-		// $scope.popover.show(contents.range(cfiRange).startContainer.parentElement);
-		// $timeout( function () {
-		//     $scope.popover.modalEl.classList.add("popover-bottom");
-		//     }, 100);
-
-		$scope.openPopover(ev2,contents.range(cfiRange).startContainer.parentElement );
-	    };
-	    
-	    
-	    $scope.onSelection = function(cfiRange, contents) {
-		console.log('calling on-selection', cfiRange, contents);
-		if(!cfiRange) {
-		    console.log('what');
-		}
-		else {
-		    var ev2 = $scope.eFromCFIRange(cfiRange, contents);
-		    $scope.openPopover(ev2);
-
-		    $scope.state.book.getRange(cfiRange).then(function (range) {
-			Array.from(document.getElementsByTagName('g')).forEach(function(theG) {
-			    var isEpubGElement = theG.getAttribute('data-epubcfi');
-			    if(isEpubGElement) {
-				theG.setAttribute("data-tap-disabled", true); // stop IONIC from killing the click events on these.
-			    }
-			});
-			
-			var text;
-			var li = document.createElement('li');
-			var a = document.createElement('a');
-			var remove = document.createElement('a');
-			var textNode;
-			
-			if (range && false) {  // this appends the highlights to the bottom of the screen.
-			    text = range.toString();
-			    textNode = document.createTextNode(text);
-			    
-			    a.textContent = cfiRange;
-			    a.href = "#" + cfiRange;
-			    a.onclick = function () {
-				$scope.state.rendition.display(cfiRange);
-			    };
-			    
-			    remove.textContent = "remove";
-			    remove.href = "#" + cfiRange;
-			    remove.onclick = function () {
-				$scope.state.rendition.annotations.remove(cfiRange);
-				return false;
-			    };
-			    
-			    li.appendChild(a);
-			    li.appendChild(textNode);
-			    li.appendChild(remove);
-			    highlights.appendChild(li);
-			}
-		    })
-		}
-	    };
-	    
 	    $scope.onBookReady = function () {
 		
 		$document.on('keydown', function (event) {
@@ -629,18 +651,6 @@ angular.module('epubreader', [])
 		}).catch(err => console.error("error generating locations", err));
 	    }
 	    
-	    $scope.loadFonts = function() {
-		$scope.state.rendition.getContents().forEach(c => {
-		    ["https://fonts.googleapis.com/css?family=Arbutus+Slab",
-		     "https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i"
-		    ].forEach(url => {
-			let el = c.document.body.appendChild(c.document.createElement("link"));
-			el.setAttribute("rel", "stylesheet");
-			el.setAttribute("href", url);
-		    });
-		});
-	    };
-
 	    $scope.doBook = function (url, opts) {
 		opts = opts || {
 		    encoding: "epub"
@@ -674,7 +684,6 @@ angular.module('epubreader', [])
 		$scope.state.rendition.on("started", $scope.onRenditionStartedRestorePos);
 		$scope.state.rendition.on("displayError", $scope.fatal);
 		$scope.state.rendition.on("selected", $scope.onRenditionSelected);
-		// $scope.state.rendition.on("selected", $scope.onSelection);
 
 		$scope.state.rendition.display();
 
@@ -712,49 +721,13 @@ angular.module('epubreader', [])
 		fi.click();
 	    };
 
-	   
 	    $scope.isBookLoaded = function () {
 		return $scope.state.book;
 	    }
 
-	    $scope.nextPage = function () {
-		$scope.state.rendition.next();
-	    };
-
-	    $scope.prevPage = function () {
-		$scope.state.rendition.prev();		
-	    };
-	    
-	    $scope.locationClick = function () {
-		try {
-		    $ionicPopup.prompt({
-			title: 'Location', template: `Location to go to (up to ${$scope.state.book.locations.length()})?`})
-			.then(function(answer) {
-			    if (!answer) return;
-			    answer = answer.trim();
-			    if (answer == "") return;
-			    
-			    let parsed = parseInt(answer, 10);
-			    if (isNaN(parsed) || parsed < 0) throw new Error("Invalid location: not a positive integer");
-			    if (parsed > $scope.state.book.locations.length()) throw new Error("Invalid location");
-			    
-			    let cfi = $scope.state.book.locations.cfiFromLocation(parsed);
-			    if (cfi === -1) throw new Error("Invalid location");
-			    
-			    $scope.state.rendition.display(cfi);
-			});
-		}
-		catch (err) {
-		    $ionicPopup.alert({title: "Error", content: '<p>' + err.toString() + '</p>'});
-		}
-	    };
-
-	    $scope.gotoTocItem = function (href, event) {
-		console.log("tocClick", href);
-		console.log($scope.state.book.canonical(href));
-		$scope.state.rendition.display(href).catch(err => console.warn("error displaying page", err));
-		$scope.doSidebar();
-	    };
+	    /********************************************************************************/
+	    /*                            Internal Search                                   */
+	    /********************************************************************************/
 
 	    $scope.onSearchClick = function (event) {
 		$scope.doSearch($scope.state.searchQuery.trim()).then(results => {
@@ -815,6 +788,11 @@ angular.module('epubreader', [])
 		});
 	    };
 
+	    /********************************************************************************/
+	    /*                                 Dictionary                                   */
+	    /********************************************************************************/
+
+	    
 	    $scope.checkDictionary = function () {
 		try {
 		    let manager = $scope.state.rendition.manager;
@@ -915,12 +893,14 @@ angular.module('epubreader', [])
 		} catch (err) {}
 	    };
 
+	    /********************************************************************************/
+	    /*                         Initialize and get going                             */
+	    /********************************************************************************/
+
 	    $scope.loadSettingsFromStorage();
-
-
 	    
 	    try {
-		let ufn = location.search.replace("?", "") || location.hash.replace("#", "");
+		let ufn = location.search.replace("?", "") || location.hash.replace("#", "") || ($scope.src ? $scope.src : "");
 		if (ufn.startsWith("!")) {
 		    ufn = ufn.replace("!", "");
 		    document.querySelector(".app button.open").style = "display: none !important";
@@ -928,8 +908,6 @@ angular.module('epubreader', [])
 		
 		// can stream from a url like this:
 		// ufn = "https://standardebooks.org/ebooks/walter-scott/ivanhoe/dist/walter-scott_ivanhoe.epub";
-		ufn = "https://standardebooks.org/ebooks/rafael-sabatini/captain-blood/dist/rafael-sabatini_captain-blood.epub";
-		// ufn = "http://www.gutenberg.org/ebooks/120.epub.images";
 		if (ufn) {
 		    fetch(ufn).then(resp => {
 			if (resp.status != 200) throw new Error("response status: " + resp.status.toString() + " " + resp.statusText);
