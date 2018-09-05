@@ -47,6 +47,30 @@ ion-popover-view.fit ion-content {
     font-size: 7vh;
 }
 
+.navbar-button {
+    min-width: 30px !important;
+    text-align: center !important;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+.bookmark-entry {
+    padding-left: 5px;
+}
+.bookmark-item {
+    padding-top: 5px;
+    padding-bottom: 5px; 
+    white-space: normal; 
+    line-height: 1.4; 
+    font-style: italic;
+}
+
+.bookmarks-hr {
+    margin-left: 10px; 
+    margin-right: 10px; 
+    border-color: rgba(226, 226, 226, 0.25);
+}
+
 .button .icon .reader-big-button-icon:before, 
 .button.icon.reader-big-button-icon:before, 
 .button.icon-left.reader-big-button-icon:before, 
@@ -70,15 +94,19 @@ ion-popover-view.fit ion-content {
 .right .button.icon.reader-big-button-icon:before, 
 .right .button.icon-left.reader-big-button-icon:before, 
 .right .button.icon-right.reader-big-button-icon:before {
-    float: right;
+    /* float: right; */
     right: 0;
 
 }
 
 .right .button:before {
-    float: right;
+    /* float: right; */
 }
 
 .ionicon-x-large:before {
     font-size: x-large !important;
+}
+
+.bookmark-pushed {
+    color: #86F053 !important;
 }

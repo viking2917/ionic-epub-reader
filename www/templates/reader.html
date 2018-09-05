@@ -22,10 +22,11 @@
     <div class="sidebar">
       <div class="tab-list">
 	<!-- <div class="button-bar"> -->
-	<a data-tab="toc" class="reader-item button button-stable icon ion-ios-list-outline" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}"></a>
-        <a data-tab="search" class="reader-item button button-stable icon ion-search" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}"></a>
-        <a data-tab="info" class="reader-item button button-stable icon ion-information-circled" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}"></a>
-        <a data-tab="settings" class="reader-item button button-stable icon ion-gear-a" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}"></a>
+	<a data-tab="toc" class="reader-item button button-stable navbar-button icon ion-ios-list-outline" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}"></a>
+	<a data-tab="marks" class="reader-item button button-stable navbar-button icon ion-bookmark" ng-click="onTabClick($event, 'marks')" ng-class="{'active': state.activeTab === 'marks'}"></a>
+        <a data-tab="search" class="reader-item button button-stable navbar-button icon ion-search" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}"></a>
+        <a data-tab="info" class="reader-item button button-stable navbar-button icon ion-information-circled" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}"></a>
+        <a data-tab="settings" class="reader-item button button-stable navbar-button icon ion-gear-a" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}"></a>
 	<!-- </div> -->
 
       </div>
@@ -38,6 +39,18 @@
 	       ng-class="{'active' : item.active}"></a>
 	  </div>
         </div>
+
+	<div class="tab" data-tab="marks" ng-show="state.activeTab === 'marks'">
+          <div class="toc-list" style="padding-top: 10px;">
+	    <div class="bookmark-entry" ng-repeat="item in state.bookmarks track by $index">
+	      <!-- <span>Bookmark</span><span style="font-size1: xx-large;"> &bull; </span> -->
+	      <span>{{item.chapterLabel}}, Location: {{item.location}}</span>
+	      <a class="reader-item bookmark-item" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">{{item.text}}</a>
+	      <hr class="bookmarks-hr">
+	    </div>
+	  </div>
+        </div>
+	
         <div class="tab search" data-tab="search" ng-show="state.activeTab === 'search'">
           <div class="search-bar">
             <input type="text" autocomplete="off" placeholder="Search book..." class="search-box" ng-model="state.searchQuery">
@@ -131,7 +144,7 @@
 
   <div class="readerBar">
     <div class="left">
-      <button  ng-click="doOpenBook()" class="button icon right1 ion-ios-cloud-upload"></button>
+      <button  ng-click="doOpenBook()" class="button icon navbar-button ion-ios-cloud-upload"></button>
     </div>
     <div class="title">
       <span class="book-title">{{metadata.title}}</span>
@@ -139,7 +152,8 @@
       <span class="book-author">{{metadata.author}}</span>
     </div>
     <div class="right" ng-show="state.book">
-      <button ng-click="doSidebar()" class="button icon right ion-android-menu"></button>
+      <button ng-click="toggleBookmark()" class="button icon navbar-button right ion-bookmark" ng-class="{'bookmark-pushed' : state.isBookmarked}"></button>
+      <button ng-click="doSidebar()"      class="button icon navbar-button right ion-android-menu"></button>
     </div>
   </div>
   

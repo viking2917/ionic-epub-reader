@@ -41,7 +41,8 @@ angular.module('epubreader', [])
 	controller: function($scope, $rootScope, $timeout, $location, $q, $sce){
 	    
 	    /* initialize variables */
-	    $scope.state = {error : false, sidebar : false, activeTab : 'toc'};
+	    $scope.state = {error : false, sidebar : false, activeTab : 'toc', bookmarks : []};
+
 	    // $scope.platform = 'ios';
 	    $scope.metadata = {};
 
@@ -279,10 +280,91 @@ angular.module('epubreader', [])
 		$scope.doSidebar();
 	    };
 
+
+	    /********************************************************************************/
+	    /*                                  Bookmarks                                   */
+	    /********************************************************************************/
+
+	    $scope.gotoMarkItem = function (bookmark) {
+		console.log("bookmarkClick", bookmark);
+		$scope.state.rendition.display(bookmark.cfi).catch(err => console.warn("error displaying page", err));
+		$scope.doSidebar();
+	    };
+
+	    $scope.toggleBookmark = function () {
+		if($scope.currentPosition) {
+		    var bIndex = $scope.state.bookmarks.find(function (element) { return (element.cfi == $scope.currentPosition.cfi); });
+		    if(typeof bIndex !== 'undefined') {
+			$scope.deleteBookmark();
+		    }
+		    else {
+			$scope.createBookmark();
+		    }
+		}
+	    };
+
+	    $scope.createBookmark = function () {
+		if($scope.currentPosition) {
+		    let savedP = $scope.currentPosition;
+		    let savedContents = $scope.contents;
+
+		    // bookmark: a cfi, a text extract, a location #. 
+		    $scope.state.book.getRange($scope.currentPosition.cfi).then(function (range) {
+			text = range.toString() || range.startContainer.data.substring(0, 200);
+			console.log(text, range, $scope.currentPosition.cfi);
+
+			let spineItem = $scope.state.book.spine.get($scope.currentPosition.cfi);
+			let navItem = $scope.state.book.navigation.get(spineItem.href);
+			let bookmark = {location: $scope.currentPosition.location, text: text, chapterLabel: navItem.label, cfi: savedP.cfi};
+
+			$scope.state.bookmarks.push(bookmark);
+			$scope.state.bookmarks.sort(function (b1, b2) { return ( (b1.location > b2.location) ? 1 : -1 ); });
+
+			$scope.state.rendition.annotations.mark($scope.currentPosition.cfi, {location: savedP.location}, 
+								(e) => {
+							     	    console.log("mark clicked", savedP, savedP.location, savedP.href, e.target);
+								});
+			$ionicPopup.alert({title: 'Saving Bookmark', template: savedP.cfi});
+			$scope.state.isBookmarked = true;
+			
+			$rootScope.$broadcast('epubReaderBookmarkSave', {
+			    bookmark: bookmark});
+		    });
+		    
+		}
+	    };
+	    
+	    $scope.deleteBookmark = function () {
+		if($scope.currentPosition) {
+		    var bIndex = $scope.state.bookmarks.find(function (element) { return (element.cfi == $scope.currentPosition.cfi); });
+		    if(typeof bIndex !== 'undefined') {
+			let deletedB = $scope.state.bookmarks.splice(bIndex, 1);		                             // delete from reader list
+			$scope.state.isBookmarked = false;
+			$scope.state.rendition.annotations.remove($scope.currentPosition.cfi, "mark");	     // delete from rendition list
+			$ionicPopup.alert({title: 'Deleted Bookmark', template: $scope.currentPosition.cfi});		     // notify any external apps
+			
+			$rootScope.$broadcast('epubReaderBookmarkDelete', {
+			    bookmark: deletedB});
+		    }
+		}
+	    };
+
+	    /********************************************************************************/
+	    /*                  Handlers for change of location, paging etc.                */
+	    /********************************************************************************/
+
 	    // store position in local storage so we come back here on reload.
 	    $scope.onRenditionRelocatedSavePos = function (event) {
 		localStorage.setItem(`${$scope.state.book.key()}:pos`, event.start.cfi);
-		$rootScope.$broadcast('epubReaderSaveLocation', {
+		$scope.currentPosition = event.start;
+		console.log('current location', $scope.currentPosition);
+
+		// if this location is bookmarked, update display flag
+		var bIndex = $scope.state.bookmarks.find(function (element) { return (element.cfi == $scope.currentPosition.cfi); });
+		$scope.state.isBookmarked = (typeof bIndex !== 'undefined');
+		$scope.$apply();
+
+		$rootScope.$broadcast('epubReaderCurrentLocation', {
 		    position: event.start.cfi
 		});
 	    };

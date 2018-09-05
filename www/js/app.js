@@ -7,13 +7,21 @@
 angular.module('readerDemo', ['ionic', 'epubreader'])
 
 .controller('ReaderCtrl', function($scope, $rootScope, $ionicActionSheet, $ionicPopover) {
+
+    $rootScope.$on('epubReaderBookmarkSave', function (event, data) {
+    	console.log('bookmark save', event, JSON.stringify(data.bookmark));
+    });
+
+    $rootScope.$on('epubReaderBookmarkDelete', function (event, data) {
+    	console.log('bookmark save', event, JSON.stringify(data.bookmark));
+    });
 	
     $rootScope.$on('epubReaderSaveSettings', function (event, data) {
     	console.log('save settings requested', event, JSON.parse(data.settings));
     });
 
-    $rootScope.$on('epubReaderSaveLocation', function (event, data) {
-    	console.log('save position requested', event, data.position);
+    $rootScope.$on('epubReaderCurrentLocation', function (event, data) {
+    	console.log('current position set', event, data.position);
     });
     
     $rootScope.$on('epubReaderNextPage', function (event, data) {
