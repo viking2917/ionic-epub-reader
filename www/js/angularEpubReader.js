@@ -51,6 +51,8 @@ angular.module('epubreader', [])
 
 	controller: function($scope, $rootScope, $timeout, $location, $q, $sce){
 	    
+	    // ionic.Platform.fullScreen();
+
 	    /* initialize variables */
 	    console.log($scope.useLocalStorage);
 	    $scope.state = {error : false, sidebar : false, activeTab : 'toc', bookmarks : []};

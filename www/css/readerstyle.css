@@ -64,11 +64,11 @@
     align-items: center;
     -webkit-justify-content: space-between;
     justify-content: space-between;
-    height: 44px;
-    line-height: 44px;
+    /* height: 44px; */
+    /* line-height: 44px; */
 
-    height: 55px;
-    line-height: 55px;
+    height: 5.5vh;
+    line-height: 5.5vh;
 
     padding: 0 10px;
 }
@@ -666,9 +666,10 @@
 
 @media only screen and (max-width: 950px) {
     .app .readerBar {
-        height: 36px;
-        line-height: 36px;
-        padding: 0 4px;
+        height: 46px;
+        line-height: 46px;
+        padding: 0 10px;
+	margin-top: 10px;
     }
 }
 

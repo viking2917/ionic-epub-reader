@@ -144,7 +144,7 @@
 
   <div class="readerBar">
     <div class="left">
-      <button  ng-click="doOpenBook()" class="button icon navbar-button ion-ios-cloud-upload"></button>
+      <button  ng-click="doOpenBook()" class="button icon navbar-button  reader-big-button-icon ion-ios-cloud-upload"></button>
     </div>
     <div class="title">
       <span class="book-title">{{metadata.title}}</span>
@@ -152,8 +152,8 @@
       <span class="book-author">{{metadata.author}}</span>
     </div>
     <div class="right" ng-show="state.book">
-      <button ng-click="toggleBookmark()" class="button icon navbar-button right ion-bookmark" ng-class="{'bookmark-pushed' : state.isBookmarked}"></button>
-      <button ng-click="doSidebar()"      class="button icon navbar-button right ion-android-menu"></button>
+      <button ng-click="toggleBookmark()" class="button icon navbar-button right  reader-big-button-icon ion-bookmark" ng-class="{'bookmark-pushed' : state.isBookmarked}"></button>
+      <button ng-click="doSidebar()"      class="button icon navbar-button right  reader-big-button-icon ion-android-menu"></button>
     </div>
   </div>
   
