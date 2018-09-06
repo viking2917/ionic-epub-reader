@@ -25,16 +25,6 @@ ion-popover-view.fit ion-content {
     opacity: 0.9;
 }
 
-/* .ion-wikipedia:before { */
-/*     /\* content: ""; *\/ */
-/*     /\* content: url(../img/WikipediaW.svg); *\/ */
-/*     /\* background-image: url(../img/WikipediaW.svg); *\/ */
-/*     width: 24px; */
-/*     height: 32px; */
-/*     padding: 6px 0px 0px 0px !important; */
-/*     opacity: 0.9; */
-/* } */
-
 .ion-wikipedia {
     content: url(../img/WikipediaW.svg);
 }
@@ -94,13 +84,7 @@ ion-popover-view.fit ion-content {
 .right .button.icon.reader-big-button-icon:before, 
 .right .button.icon-left.reader-big-button-icon:before, 
 .right .button.icon-right.reader-big-button-icon:before {
-    /* float: right; */
     right: 0;
-
-}
-
-.right .button:before {
-    /* float: right; */
 }
 
 .ionicon-x-large:before {
@@ -109,4 +93,5 @@ ion-popover-view.fit ion-content {
 
 .bookmark-pushed {
     color: #86F053 !important;
+    /* color: #1565C0 !important; */
 }

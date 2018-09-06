@@ -15,6 +15,16 @@
    also introduces an annotation UI. The directive manages the integration with epub.js highlighting system, as well as providing an annotation UI. 
    major lifecycle events generate angular events, which an external application can watch for, for things such as serialization or coordination with UI states
 
+   Usage: 
+   Arguments:
+      use-local-storage: { true | false } - whether to store reader actions in local storage and recover them on reload: eg. current page #, bookmarks, etc.
+      src: {uri} - a uri to an epub file to load. 
+
+   <epubreader 
+      use-local-storage="false" 
+      src="https://standardebooks.org/ebooks/rafael-sabatini/captain-blood/dist/rafael-sabatini_captain-blood.epub">
+   </epubreader>
+   
 */
 
 
@@ -33,6 +43,7 @@ angular.module('epubreader', [])
 	restrict: "E",
 	scope: {
 	    src: '@', 
+	    useLocalStorage: '=',
 	    // directivevariable: '=', 
 	},
 
@@ -41,6 +52,7 @@ angular.module('epubreader', [])
 	controller: function($scope, $rootScope, $timeout, $location, $q, $sce){
 	    
 	    /* initialize variables */
+	    console.log($scope.useLocalStorage);
 	    $scope.state = {error : false, sidebar : false, activeTab : 'toc', bookmarks : []};
 
 	    // $scope.platform = 'ios';
@@ -63,17 +75,19 @@ angular.module('epubreader', [])
 		{name: 'Lato', style: "'Lato', sans-serif"},
 		{name: 'George', style: "'Georgia', Liberation Serif, serif"},
 		{name: 'Times New Roman', style: "'Times New Roman', Tinos, Liberation Serif, Times, serif"},
-		{name: 'Arbutus Slab', style: "'Arbutus Slab', serif"}
+		{name: 'Spectral', style: "'Spectral', sans-serif"},
+		{name: 'Libre Baskerville', style: "'Libre Baskerville', sans-serif"},
+		{name: 'Merriweather', style: "'Merriweather', serif"}
 	    ];
 	    
 	    $scope.theme = {
 		bg: "#fff", fg: "#000",
-		l: "#1e83d2", ff: "'Times New Roman', Tinos, Liberation Serif, Times, serif",
+		l: "#1e83d2", ff: "'Merriweather', 'Times New Roman', Tinos, Liberation Serif, Times, serif",
 		fs: "11", lh: "1.6", ta: "justify", m: "5"
 	    };
 
 	    $scope.saveSettingsToStorage = function () {
-		localStorage.setItem(`ePubViewer:settings`, JSON.stringify($scope.theme));
+		if($scope.useLocalStorage) localStorage.setItem(`ePubViewer:settings`, JSON.stringify($scope.theme));
 		$rootScope.$broadcast('epubReaderSaveSettings', {
 		    settings: JSON.stringify($scope.theme)
 		});
@@ -81,9 +95,11 @@ angular.module('epubreader', [])
 	    };
 	  
 	    $scope.loadSettingsFromStorage = function () {
-		let restored = localStorage.getItem(`ePubViewer:settings`);
-		if((typeof restored !== 'undefined') && restored) {
-		    $scope.theme = JSON.parse(restored);
+		if($scope.useLocalStorage) {
+		    let restored = localStorage.getItem(`ePubViewer:settings`);
+		    if((typeof restored !== 'undefined') && restored) {
+			$scope.theme = JSON.parse(restored);
+		    }
 		}
 		$scope.applyTheme();
 	    };
@@ -162,7 +178,10 @@ angular.module('epubreader', [])
 	    $scope.loadFonts = function() {
 		$scope.state.rendition.getContents().forEach(c => {
 		    ["https://fonts.googleapis.com/css?family=Arbutus+Slab",
-		     "https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i"
+		     "https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i",
+		     "https://fonts.googleapis.com/css?family=Spectral",
+		     "https://fonts.googleapis.com/css?family=Libre+Baskerville",
+		     "https://fonts.googleapis.com/css?family=Merriweather"
 		    ].forEach(url => {
 			let el = c.document.body.appendChild(c.document.createElement("link"));
 			el.setAttribute("rel", "stylesheet");
@@ -319,7 +338,7 @@ angular.module('epubreader', [])
 
 			$scope.state.bookmarks.push(bookmark);
 			$scope.state.bookmarks.sort(function (b1, b2) { return ( (b1.location > b2.location) ? 1 : -1 ); });
-
+			$scope.saveBookmarkstoStorage();
 			$scope.state.rendition.annotations.mark($scope.currentPosition.cfi, {location: savedP.location}, 
 								(e) => {
 							     	    console.log("mark clicked", savedP, savedP.location, savedP.href, e.target);
@@ -340,6 +359,7 @@ angular.module('epubreader', [])
 		    if(typeof bIndex !== 'undefined') {
 			let deletedB = $scope.state.bookmarks.splice(bIndex, 1);		                             // delete from reader list
 			$scope.state.isBookmarked = false;
+			$scope.saveBookmarkstoStorage();
 			$scope.state.rendition.annotations.remove($scope.currentPosition.cfi, "mark");	     // delete from rendition list
 			$ionicPopup.alert({title: 'Deleted Bookmark', template: $scope.currentPosition.cfi});		     // notify any external apps
 			
@@ -349,13 +369,28 @@ angular.module('epubreader', [])
 		}
 	    };
 
+	    $scope.saveBookmarkstoStorage = function () {
+		if($scope.useLocalStorage) localStorage.setItem(`${$scope.state.book.key()}:bookmarks`, JSON.stringify($scope.state.bookmarks));
+
+	    };
+
+	    $scope.loadBookmarksfromStorage = function () {
+		if($scope.useLocalStorage) {
+		    let stored = localStorage.getItem(`${$scope.state.book.key()}:bookmarks`);
+		    if(stored) {
+			$scope.state.bookmarks = JSON.parse(stored);
+		    }
+		}
+	    };
+
+
 	    /********************************************************************************/
 	    /*                  Handlers for change of location, paging etc.                */
 	    /********************************************************************************/
 
 	    // store position in local storage so we come back here on reload.
 	    $scope.onRenditionRelocatedSavePos = function (event) {
-		localStorage.setItem(`${$scope.state.book.key()}:pos`, event.start.cfi);
+		if($scope.useLocalStorage) localStorage.setItem(`${$scope.state.book.key()}:pos`, event.start.cfi);
 		$scope.currentPosition = event.start;
 		console.log('current location', $scope.currentPosition);
 
@@ -372,9 +407,11 @@ angular.module('epubreader', [])
 	    // reload location on reload of book
 	    $scope.onRenditionStartedRestorePos = function (event) {
 		try {
-		    let stored = localStorage.getItem(`${$scope.state.book.key()}:pos`);
-		    console.log("storedPos", stored);
-		    if (stored) $scope.state.rendition.display(stored);
+		    if($scope.useLocalStorage) {
+			let stored = localStorage.getItem(`${$scope.state.book.key()}:pos`);
+			console.log("storedPos", stored);
+			if (stored) $scope.state.rendition.display(stored);
+		    }
 		} catch (err) {
 		    $scope.fatal("error restoring position", err);
 		}
@@ -721,15 +758,21 @@ angular.module('epubreader', [])
 		});
 
 		let chars = 1650;
-		let key = `${$scope.state.book.key()}:locations-${chars}`;
-		let stored = localStorage.getItem(key);
-		console.log("storedLocations", typeof stored == "string" ? stored.substr(0, 40) + "..." : stored);
-		
-		if (stored) return $scope.state.book.locations.load(stored);
+		if($scope.useLocalStorage) {
+		    let key = `${$scope.state.book.key()}:locations-${chars}`;
+		    let stored = localStorage.getItem(key);
+		    console.log("storedLocations", typeof stored == "string" ? stored.substr(0, 40) + "..." : stored);
+		    if (stored) return $scope.state.book.locations.load(stored);
+		}
+
+		$scope.loadBookmarksfromStorage();
+
 		console.log("generating locations");
 		return $scope.state.book.locations.generate(chars).then(() => {
-		    localStorage.setItem(key, $scope.state.book.locations.save());
-		    console.log("locations generated", $scope.state.book.locations);
+		    if($scope.useLocalStorage) {
+			localStorage.setItem(key, $scope.state.book.locations.save());
+			console.log("locations generated", $scope.state.book.locations);
+		    }
 		}).catch(err => console.error("error generating locations", err));
 	    }
 	    
@@ -980,7 +1023,6 @@ angular.module('epubreader', [])
 	    /********************************************************************************/
 
 	    $scope.loadSettingsFromStorage();
-	    
 	    try {
 		let ufn = location.search.replace("?", "") || location.hash.replace("#", "") || ($scope.src ? $scope.src : "");
 		if (ufn.startsWith("!")) {
