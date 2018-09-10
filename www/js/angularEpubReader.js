@@ -51,8 +51,6 @@ angular.module('epubreader', [])
 
 	controller: function($scope, $rootScope, $timeout, $location, $q, $sce){
 	    
-	    // ionic.Platform.fullScreen();
-
 	    /* initialize variables */
 	    console.log($scope.useLocalStorage);
 	    $scope.state = {error : false, sidebar : false, activeTab : 'toc', bookmarks : []};
@@ -611,7 +609,7 @@ angular.module('epubreader', [])
 				bar.left = bar.left - contents.content.clientWidth;
 			    }
 
-			    bar.top = bar.top + 40;
+			    bar.top = bar.top + 60;
 			    return bar;
 				
 			    // return {
@@ -643,17 +641,23 @@ angular.module('epubreader', [])
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
 			
 			text = range.toString();						    // get text of current selection		
-			$ionicPopup.alert({title: 'Saving Highlight', template: text});
-
 			// generate event to pass out to generic angular app watching for it. 
 			$rootScope.$broadcast('epubReaderHighlightSaveRequested', {
 			    text: text, cfiRange: $scope.cfiRange, range: range});
 
 			// cleanup
-			if($scope.contents) $scope.contents.window.getSelection().removeAllRanges();
+			if($scope.contents) {
+			    $scope.contents.window.getSelection().removeAllRanges();
+			}
+		
+
 			$scope.cfiRange = false;
 			$scope.contents = false;
 			$scope.closeHighlightMenu();
+			// for some reason, this alert displays before the screen repaints and the text highlights over-ride it. ick.
+			// $timeout(function () { 
+			//     $ionicPopup.alert({title: 'Saving Highlight', template: text});
+			// }, 1000);
 		    });
 		}
 		// there is no current selection, we clicked on an existing highlight most likely.
@@ -735,8 +739,19 @@ angular.module('epubreader', [])
 			let url = false;
 			if(engine == 'google') url = "https://www.google.com/search?q="+text;
 			if(engine == 'wikipedia') url = "https://en.wikipedia.org/wiki/Special:Search?search=" + text;
-			if(url) window.open(url);
+			if(url) $scope.openBrowser(url);
 		    });
+		}
+	    };
+
+	    $scope.openBrowser = function (url) {
+		if(typeof cordova !== 'undefined') {
+		    var target = "_system";
+		    var options = "location=yes,hidden=no,footer=yes";
+		    cordova.InAppBrowser.open(url, target, options);
+		}
+		else {
+		    window.open(url);
 		}
 	    };
 

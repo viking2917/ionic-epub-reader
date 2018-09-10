@@ -24,6 +24,13 @@ Ensure you have Ionic V1 installed.
 ionic start ionic-epub-reader blank --type ionic1
 ```
 
+This directive makes use of two Ionic/Cordova plugins, the [inAppBrowser](https://github.com/apache/cordova-plugin-inappbrowser) and StatusBar, you will need to install them as well:
+
+```
+cordova plugin add cordova-plugin-inappbrowser
+cordova plugin add cordova-plugin-statusbar
+```
+
 #### Using script tag
 
 
@@ -63,7 +70,8 @@ EPUB (with images) works nicely.
 ## Technologies used in this project
 
 - [AngularJS] 
-- [IonicV1] 
+- [IonicV1]
+- [inAppBrowser]
 - [ePub.js](https://github.com/futurepress/epub.js/)
 - [normalize.css](https://necolas.github.io/normalize.css/) / [sanitizeHtml](https://www.npmjs.com/package/sanitize-html)
 
@@ -82,3 +90,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 [angularjs]:http://angularjs.org
 [ionicV1]:https://ionicframework.com/docs/v1/
+[inAppBrowser]:https://github.com/apache/cordova-plugin-inappbrowser

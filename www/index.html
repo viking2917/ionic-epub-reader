@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <!-- <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width"> -->
     <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src * gap://ready data:; img-src * 'self' data:; style-src * 'unsafe-inline'; script-src * 'self' 'unsafe-inline' 'unsafe-eval';"> -->
+
     <title></title>
 
     <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
@@ -45,6 +48,8 @@
     <script src="lib/sanitize-html.min.js"></script>
     <script src="lib/jszip.min.js"></script>
     <script src="lib/epub.v0.3.66.js"></script>
+    <!-- <script src="lib/epub.v0.3.66.debug.js"></script> -->
+
     <script src="js/angularEpubReader.js"></script>
     <script src="js/app.js"></script>
   </head>
@@ -53,7 +58,7 @@
     <ion-pane ng-controller="ReaderCtrl">
       <ion-content overflow-scroll="true">
 	<!-- https://standardebooks.org/ebooks/walter-scott/ivanhoe/dist/walter-scott_ivanhoe.epub-->
-    	<epubreader use-local-storage="false" src="https://standardebooks.org/ebooks/rafael-sabatini/captain-blood/dist/rafael-sabatini_captain-blood.epub"></epubreader>
+    	<epubreader use-local-storage="true" src="https://standardebooks.org/ebooks/rafael-sabatini/captain-blood/dist/rafael-sabatini_captain-blood.epub"></epubreader>
       </ion-content>
     </ion-pane>
   </body>

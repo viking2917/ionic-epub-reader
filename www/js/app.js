@@ -72,11 +72,12 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
       // remove the status bar on iOS or change it to use white instead of dark colors.
 
 	// the stock ionic app does this:
-      // StatusBar.styleDefault();
+       StatusBar.styleDefault();
 
       // we're going to do this, as the reader is full screen and we don't want the status bar over-lapping our reader.
       // if you are integrating the reader into another app, you will likely want to defer this call until you are ready to display the reader.
-      StatusBar.hide();
+	// actually I set <preference name="StatusBarOverlaysWebView" value="false" /> in config.xml, it seems to do better than the below, which leaves some visual junk on the screen.
+      // StatusBar.hide();
 
     }
   });
