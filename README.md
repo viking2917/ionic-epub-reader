@@ -75,6 +75,21 @@ EPUB (with images) works nicely.
 - [ePub.js](https://github.com/futurepress/epub.js/)
 - [normalize.css](https://necolas.github.io/normalize.css/) / [sanitizeHtml](https://www.npmjs.com/package/sanitize-html)
 
+### Build notes and gotchas
+
+config.xml additions required:
+
+(document these here)
+
+In order for the in-app browser, and associated Google and Wikipedia features to work, you must:
+
+```
+ionic cordova add platform browser
+```
+
+then 'ionic serve' will allow the in-app browser window to work.
+
+
 ### Prerequisites
 
 You will need to have Ionic V1 installed to run the sample app. 

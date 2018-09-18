@@ -6,7 +6,7 @@
   <ion-content >
     <div class="button-bar">
       <!-- leave the highlight after selection -->
-      <button ng-click="highlightMenuConfirmHighlight()" class="button icon ion-checkmark-circled"></button>
+      <button ng-click="highlightMenuConfirmHighlight($event)" class="button icon ion-checkmark-circled"></button>
 
       <!-- delete the highlight -->
       <button ng-if="cfiRange" ng-click="highlightMenuDeleteHighlight()" class="button icon ion-close-circled"></button> 

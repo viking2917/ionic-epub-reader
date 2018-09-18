@@ -45,7 +45,7 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
     });
 
     $rootScope.$on('epubReaderHighlightDeleteRequested', function (event, data) {
-    	console.log('highlight save requested', event, data);
+    	console.log('highlight delete requested', event, data);
     });
 
 

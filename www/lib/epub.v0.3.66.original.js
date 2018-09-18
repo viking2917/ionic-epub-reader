@@ -4766,7 +4766,6 @@ var Contents = function () {
 			}
 
 			_constants.DOM_EVENTS.forEach(function (eventName) {
-			    console.log('adding event listener', eventName);
 				this.document.addEventListener(eventName, this.triggerEvent.bind(this), false);
 			}, this);
 		}
@@ -4783,7 +4782,6 @@ var Contents = function () {
 				return;
 			}
 			_constants.DOM_EVENTS.forEach(function (eventName) {
-			    console.log('removing event listener', eventName);
 				this.document.removeEventListener(eventName, this.triggerEvent, false);
 			}, this);
 		}
@@ -4796,7 +4794,6 @@ var Contents = function () {
 	}, {
 		key: "triggerEvent",
 		value: function triggerEvent(e) {
-  //console.log("trigger event", e);
 			this.emit(e.type, e);
 		}
 
@@ -4836,28 +4833,13 @@ var Contents = function () {
 	}, {
 		key: "onSelectionChange",
 		value: function onSelectionChange(e) {
-//		    var seenTouchend = false;
-
-		    // function myTouchEndHandler () {
-		    // 	seenTouchend = true;
-		    // };
-
-		    // this.document.removeEventListener("touchend", myTouchEndHandler);
-		    // this.document.addEventListener("touchend", myTouchEndHandler);
-
-		    if (this.selectionEndTimeout) {
-			clearTimeout(this.selectionEndTimeout);
-		    }
-		    this.selectionEndTimeout = setTimeout(function () {
-			var selection = this.window.getSelection();
-//			if(seenTouchend) {
-			    // need to have seen a touchend event.
-			    this.triggerSelectedEvent(selection);
-//			    seenTouchend = false; // reset for next time
-//			    this.document.removeEventListener("touchend", myTouchEndHandler);
-//			}
-//		    }.bind(this), 250);
-		    }.bind(this), 1500);
+			if (this.selectionEndTimeout) {
+				clearTimeout(this.selectionEndTimeout);
+			}
+			this.selectionEndTimeout = setTimeout(function () {
+				var selection = this.window.getSelection();
+				this.triggerSelectedEvent(selection);
+			}.bind(this), 250);
 		}
 
 		/**
@@ -7417,7 +7399,6 @@ var Rendition = function () {
 	}, {
 		key: "triggerViewEvent",
 		value: function triggerViewEvent(e, contents) {
-//console.log('triggerViewEvent', e, contents);
 			this.emit(e.type, e, contents);
 		}
 
@@ -8183,7 +8164,7 @@ var IframeView = function () {
 
 		this.layout = this.settings.layout;
 		// Dom events to listen for
-//this.listenedEvents = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
+		// this.listenedEvents = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
 
 		this.pane = undefined;
 		this.highlights = {};
@@ -8731,7 +8712,6 @@ var IframeView = function () {
 			h.element.setAttribute("ref", className);
 			h.element.addEventListener("click", emitter);
 			h.element.addEventListener("touchstart", emitter);
-			h.element.addEventListener("touchend", emitter);
 
 			if (cb) {
 				h.element.addEventListener("click", cb);
@@ -8773,7 +8753,6 @@ var IframeView = function () {
 			h.element.setAttribute("ref", className);
 			h.element.addEventListener("click", emitter);
 			h.element.addEventListener("touchstart", emitter);
-			h.element.addEventListener("touchend", emitter);
 
 			if (cb) {
 				h.element.addEventListener("click", cb);
@@ -8858,12 +8837,11 @@ var IframeView = function () {
 			if (cb) {
 				mark.addEventListener("click", cb);
 				mark.addEventListener("touchstart", cb);
-			        mark.addEventListener("touchend", cb);
 			}
 
 			mark.addEventListener("click", emitter);
 			mark.addEventListener("touchstart", emitter);
-		        mark.addEventListener("touchend", emitter);
+
 			this.element.appendChild(mark);
 
 			this.marks[cfiRange] = { "element": mark, "listeners": [emitter, cb] };
@@ -14902,7 +14880,7 @@ function proxyMouse(target, tracked) {
         this.target = target;
     }
 
-    var _arr = ['mouseup', 'mousedown', 'click', 'touchstart', 'touchend'];
+    var _arr = ['mouseup', 'mousedown', 'click', 'touchstart'];
     for (var _i = 0; _i < _arr.length; _i++) {
         var ev = _arr[_i];
         this.target.addEventListener(ev, function (e) {

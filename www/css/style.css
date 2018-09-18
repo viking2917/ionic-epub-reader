@@ -21,6 +21,8 @@ ion-popover-view.fit ion-content {
 .custom-icon {
     width: 26px;
     height: 26px;
+    top: 50%;
+    transform: translateY(-50%);
     margin-top: -2px;
     opacity: 0.9;
 }
@@ -30,7 +32,7 @@ ion-popover-view.fit ion-content {
 }
 
 .ion-google {
-    content: url(../img/_ionicons_svg_logo-google.svg);
+    content: url(../img/Google__G__Logo.svg);
 }
 
 .pager-size {   
@@ -96,6 +98,9 @@ ion-popover-view.fit ion-content {
     /* color: #1565C0 !important; */
 }
 
+.action-sheet-wrapper {
+    max-width: 350px !important;
+}
 
 @media only screen and (max-width: 950px) {
 

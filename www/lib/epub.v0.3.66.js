@@ -4839,7 +4839,7 @@ var Contents = function () {
 			this.selectionEndTimeout = setTimeout(function () {
 				var selection = this.window.getSelection();
 				this.triggerSelectedEvent(selection);
-			}.bind(this), 2500);
+			}.bind(this), 2000);
 		}
 
 		/**
