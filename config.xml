@@ -3,7 +3,7 @@
     <name>Ionic Epub Reader</name>
     <description>A sample app demonstrating use of Ionic-epub-reader</description>
     <author email="info@thehawaiiproject.com" href="http://ionicframework.com/">The Hawaii Project</author>
-    <content original-src="index.html" src="http://192.168.1.21:8101" />
+    <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -86,8 +86,7 @@
     <plugin name="cordova-plugin-statusbar" spec="^2.4.2" />
     <plugin name="cordova-plugin-inappbrowser" spec="^3.0.0" />
     <allow-navigation href="http://192.168.1.21:8100" sessionid="4840aa6f" />
-    <allow-navigation href="http://192.168.1.21:8101" sessionid="59c439ef" />
     <engine name="browser" spec="5.0.4" />
-    <engine name="ios" spec="4.5.5" />
     <engine name="android" spec="7.0.0" />
+    <engine name="ios" spec="4.5.5" />
 </widget>

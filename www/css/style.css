@@ -79,14 +79,16 @@ ion-popover-view.fit ion-content {
 .left .button.icon.reader-big-button-icon:before, 
 .left .button.icon-left.reader-big-button-icon:before, 
 .left .button.icon-right.reader-big-button-icon:before {
-    float: left;
-    left: 0
+    /* float: left; */
+    /* left: 0 */
+    right: 33%;  /* center the icons */
 }
 .right .button .icon .reader-big-button-icon:before, 
 .right .button.icon.reader-big-button-icon:before, 
 .right .button.icon-left.reader-big-button-icon:before, 
 .right .button.icon-right.reader-big-button-icon:before {
-    right: 0;
+    /* right: 0; */
+    right: 33%;  /* center the icons */
 }
 
 .ionicon-x-large:before {
@@ -99,7 +101,7 @@ ion-popover-view.fit ion-content {
 }
 
 .action-sheet-wrapper {
-    max-width: 350px !important;
+    max-width: 20rem !important;
 }
 
 @media only screen and (max-width: 950px) {
