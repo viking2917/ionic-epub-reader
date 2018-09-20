@@ -18,6 +18,7 @@ ion-popover-view.fit ion-content {
     padding: 0 10px !important;   /* this fixes button icons in the highlighting popover menu */
 }
 
+/* Icons */
 .custom-icon {
     width: 26px;
     height: 26px;
@@ -45,6 +46,10 @@ ion-popover-view.fit ion-content {
     content: url(../img/pencil_straight.svg);
 }
 
+.ionicon-x-large:before {
+    font-size: x-large !important;
+}
+
 .pager-size {   
     font-size: 7vh;
 }
@@ -55,6 +60,8 @@ ion-popover-view.fit ion-content {
     padding-left: 0px !important;
     padding-right: 0px !important;
 }
+
+/* bookmark tabs */
 
 .bookmark-entry {
     padding-left: 5px;
@@ -86,10 +93,6 @@ ion-popover-view.fit ion-content {
     padding-bottom: 5px;
 }
 
-.ionicon-x-large:before {
-    font-size: x-large !important;
-}
-
 .bookmark-pushed {
     color: #86F053 !important;
 }
@@ -100,7 +103,7 @@ ion-popover-view.fit ion-content {
 
 @media only screen and (max-width: 950px) {
 
-    .navbar-button {
-	min-width: 5vh !important;
-    }
+    /* .navbar-button { */
+    /* 	min-width: 5vh !important; */
+    /* } */
 }
