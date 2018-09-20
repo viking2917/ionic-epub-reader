@@ -40,11 +40,11 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
     	console.log('text selected', event, data);
     });
 
-    $rootScope.$on('epubReaderHighlightSaveRequested', function (event, data) {
+    $rootScope.$on('epubReaderHighlightSave', function (event, data) {
     	console.log('highlight save requested', event, data);
     });
 
-    $rootScope.$on('epubReaderHighlightDeleteRequested', function (event, data) {
+    $rootScope.$on('epubReaderHighlightDelete', function (event, data) {
     	console.log('highlight delete requested', event, data);
     });
 
