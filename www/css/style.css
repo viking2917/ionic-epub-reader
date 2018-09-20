@@ -27,12 +27,22 @@ ion-popover-view.fit ion-content {
     opacity: 0.9;
 }
 
+.custom-icon-small {
+    width: 14px;
+    height: 14px;
+    margin: 0px 5px -2px 5px;
+    opacity: 0.9;
+}
+
 .ion-wikipedia {
     content: url(../img/WikipediaW.svg);
 }
 
 .ion-google {
     content: url(../img/Google__G__Logo.svg);
+}
+.ion-marker {
+    content: url(../img/pencil_straight.svg);
 }
 
 .pager-size {   
@@ -71,24 +81,9 @@ ion-popover-view.fit ion-content {
     line-height: 5vh !important;
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
     padding-bottom: 5px;
-}
-
-.left .button .icon .reader-big-button-icon:before, 
-.left .button.icon.reader-big-button-icon:before, 
-.left .button.icon-left.reader-big-button-icon:before, 
-.left .button.icon-right.reader-big-button-icon:before {
-    /* float: left; */
-    /* left: 0 */
-    right: 33%;  /* center the icons */
-}
-.right .button .icon .reader-big-button-icon:before, 
-.right .button.icon.reader-big-button-icon:before, 
-.right .button.icon-left.reader-big-button-icon:before, 
-.right .button.icon-right.reader-big-button-icon:before {
-    /* right: 0; */
-    right: 33%;  /* center the icons */
 }
 
 .ionicon-x-large:before {
@@ -97,7 +92,6 @@ ion-popover-view.fit ion-content {
 
 .bookmark-pushed {
     color: #86F053 !important;
-    /* color: #1565C0 !important; */
 }
 
 .action-sheet-wrapper {
