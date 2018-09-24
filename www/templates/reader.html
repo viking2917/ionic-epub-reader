@@ -54,11 +54,11 @@
 	      </div>
 
 	      <div class="bookmark-entry">
-		<a class="reader-item bookmark-item" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">
+		<a class="reader-item bookmark-item" style="white-space: normal; line-height: 1.2;" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">
 		  <!-- <div>{{item.chapterLabel}}, Location: {{item.location}}</div> -->
 		  <!-- <a class="reader-item bookmark-item" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">{{item.text}}</a> -->
-		  {{item.text}}</a>
-
+		  <blockquote>{{item.text}}</blockquote></a>
+		  <span ng-if="item.annotationText" ng-bind-html="item.annotationText"></span>
 		<hr class="bookmarks-hr">
 	      </div>
 	    </div>
@@ -191,6 +191,9 @@
     </div>
   </div>
 
+  <div ng-show="showNoteEditor" id="noteEditor" class="note-editor">
+
+  </div>
   <div id="extras">
     <!-- <ul id="highlights"></ul> -->
   </div>

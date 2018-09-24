@@ -6,7 +6,6 @@
  *
  * @version: 1.0.0
 
-
    a directive for an ionic/angular v1 eReader for reading epub files. 
    leverages the epub.js component from future press.
    also leverages a heavily hacked up version of [Patrick G](https://github.com/geek1011)'s excellent [ePubViewer](https://github.com/geek1011/ePubViewer). 
@@ -148,6 +147,7 @@ angular.module('epubreader', [])
 		    $scope.saveSettingsToStorage();
 
 		    var el = angular.element( document.querySelector( '.app' ) );
+		    
 		    el.css('background', $scope.theme.bg);
 		    el.css('fontFamily', $scope.theme.ff);
 		    el.css('color', $scope.theme.fg);
@@ -540,7 +540,7 @@ angular.module('epubreader', [])
 										 $scope.showHighlightMenu();
 										 e.stopPropagation();
 									     }, 200);
-									 });
+									 }, 'annotated-highlight');
 			    
 			    if($scope.contents) {									// cleanup
 				$scope.contents.window.getSelection().removeAllRanges();
@@ -607,14 +607,17 @@ angular.module('epubreader', [])
 										 $scope.showHighlightMenu(); 
 										 e.stopPropagation();
 									     }, 200);
-									 });
+									 }, 'annotated-highlight');
 			});
 		    }
 		}
 	    };
 	    
-	    // we're keeping a global location index of both highlights as bookmarks. before display, update both. also, the location field is page-layout dependent - a
+	    // we're keeping a global location index of both highlights as bookmarks. before display, update both. also, the location field is page-layout dependent - a 
 	    // resize can affect them. so recompute them at display time to ensure they are current.
+	    // NOTE: can't figure out how to get to the compare() method for real cfi location comparisons. just using Locations, but I can't figure out how distinguish in-page locations, so
+	    // witha a page these may not be correctly sorted. 
+
 	    $scope.updateGlobalLocationsList = function () {
 
 		$scope.state.marks = [];
@@ -651,11 +654,17 @@ angular.module('epubreader', [])
 		// remove range display. this kills the selection handles which are distracting at this point in the user process.
 		// then save the highlight. this will add the annotation display so the range is shaded.
 		if($scope.contents) $scope.contents.window.getSelection().removeAllRanges(); 
+
 		$scope.createHighlight();								    
+
+		// is there already a note?
+		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
+		var noteButton = '<i class="icon ion-android-create"></i>Create Note';
+		if(theHighlight && theHighlight.annotationText) noteButton = '<i class="icon ion-android-create"></i>Edit Note';
 
 		var buttons =  [ {text: '<i class="icon ion-checkmark-circled"></i>Save Highlight'}, 
 				 {text: '<i class="icon ion-close-circled"></i>Delete Highlight'},
-				 {text: '<i class="icon ion-android-create"></i>Create Note'},
+				 {text: noteButton},
 				 {text: '<i class="icon custom-icon ion-google"></i>Google'},
 				 {text: '<i class="icon custom-icon ion-wikipedia"></i>Wikipedia'},
 			       ];
@@ -677,7 +686,7 @@ angular.module('epubreader', [])
 				    $scope.deleteHighlight();
 				    break;
 				case 2:
-				    $scope.popoverAddNote();
+				    $scope.createNote();
 				    break;
 				case 3:
 				    $scope.highlightMenuSearch('google');
@@ -695,6 +704,98 @@ angular.module('epubreader', [])
 		}
 	    };
 
+	    /********************************************************************************/
+	    /*                                  Annotations                                 */
+	    /********************************************************************************/
+	    
+	    $scope.createNote = function () {
+		$scope.showNoteEditor = true;
+		var el = angular.element( document.querySelector( '#noteEditor' ) )[0];
+
+		var defaultNote = "";
+		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
+		if(theHighlight && theHighlight.annotationText) {
+		    defaultNote = theHighlight.annotationText;
+		}
+
+		el.content.innerHTML = defaultNote;
+	    }
+
+	    $scope.saveNote = function () {
+		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
+		if(theHighlight) {
+		    if($scope.tentativeHtml)
+			theHighlight.annotationText = $scope.tentativeHtml;
+		    else 
+			delete theHighlight.annotationText;
+
+		    $scope.saveHighlightstoStorage();
+
+		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
+			$rootScope.$broadcast('epubReaderAnnotationSave', {text: theHighlight.text, annotationText: theHighlight.annotationText, cfiRange: $scope.cfiRange, range: range});
+		    });
+		}
+	    };
+	    
+	    $scope.keepNoteHtml = function (html) {
+		// console.log(html);
+		$scope.tentativeHtml = html;
+	    }
+
+	    // probably needs to go into a modal so other events don't get processed.
+	    $scope.pellInit = function () {
+		var el = angular.element( document.querySelector( '#noteEditor' ) )[0];
+
+		// Initialize pell on an HTMLElement
+		pell.init({
+		    element: el,
+		    onChange: html => {$scope.keepNoteHtml(html);},
+		    defaultParagraphSeparator: 'div',
+		    // <boolean>, optional, default = false
+		    // Outputs <span style="font-weight: bold;"></span> instead of <b></b>
+		    styleWithCSS: false,
+		    actions: [
+			'bold', 'italic', 'quote', 'paragraph', 'underline',
+			{ name: 'link', result: () => {
+			    if(!window.getSelection().toString()) $ionicPopup.alert({title: "Select Text", content:  'Please select the text you want a link added to.'});
+			    else {
+				answer = window.prompt('Enter the link URL');
+				if(answer === null) {}
+				else if (!$scope.isValidUrl(answer)) $ionicPopup.alert({title: "Error - bad link", content: answer + ' is not a valid url.'});
+				else pell.exec('createLink', answer);
+				
+				// inonic popup needs you to click before you can enter, so it deselects the text needed for the exec to work
+				// $ionicPopup.prompt({
+				//     title: 'Enter link URL', inputType: 'url', template: `Enter a URL for the location`})
+				//     .then(function(answer) {
+				// 	if(!answer) $ionicPopup.alert({title: "Error - bad link", content: "That is not a valid url."});
+				// 	else if(!$scope.isValidUrl(answer))  $ionicPopup.alert({title: "Error - bad link", content: answer + ' is not a valid url.'});
+				// 	else pell.exec('createLink', answer);
+				//     });
+			    }
+			}
+			}, 
+			// spacer
+			{ name: 'blank', icon: '<i class="icon ion-missingname"></i>', title: ''}, 
+			{ name: 'undo', icon: '<i class="icon ion-ios-undo pell-actionbar-action-color"></i>', result: () => pell.exec('undo') },
+			{ name: 'redo', icon: '<i class="icon ion-ios-redo pell-actionbar-action-color"></i>', result: () => pell.exec('redo') },
+			{ name: 'Cancel', icon: '<i class="icon ion-close-circled pell-actionbar-action-color"></i>', title: 'Cancel comment',
+			  result: () => {
+			      $scope.showNoteEditor = false;
+			      $scope.$apply();
+			  }
+			},
+			{ name: 'OK', icon: '<i class="icon ion-checkmark-circled pell-actionbar-action-color"></i>', title: 'Accept comment',
+			  result: () => { 
+			      $scope.showNoteEditor = false;
+			      $scope.saveNote();
+			      $scope.$apply();
+			  }
+			}
+		    ]
+		});
+	    }
+	    
 	    /********************************************************************************/
 	    /*                  Handlers for change of location, paging etc.                */
 	    /********************************************************************************/
@@ -959,7 +1060,6 @@ angular.module('epubreader', [])
 	    /********************************************************************************/
 	    /*                                 Dictionary                                   */
 	    /********************************************************************************/
-
 	    
 	    $scope.checkDictionary = function () {
 		try {
@@ -1063,11 +1163,22 @@ angular.module('epubreader', [])
 		} catch (err) {}
 	    };
 
+	    // via: https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+	    $scope.isValidUrl = function (string) {
+		try {
+		    new URL(string);
+		    return true;
+		} catch (_) {
+		    return false;  
+		}
+	    };
+
 	    /********************************************************************************/
 	    /*                         Initialize and get going                             */
 	    /********************************************************************************/
 
 	    $scope.loadSettingsFromStorage();
+	    $scope.pellInit();
 	    
 	    try {
 		let ufn = location.search.replace("?", "") || location.hash.replace("#", "") || ($scope.src ? $scope.src : "");

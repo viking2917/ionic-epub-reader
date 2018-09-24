@@ -78,6 +78,7 @@ ion-popover-view.fit ion-content {
     margin-left: 10px; 
     margin-right: 10px; 
     border-color: rgba(226, 226, 226, 0.25);
+    margin: 10px 0 10px 0;
 }
 
 .button .icon .reader-big-button-icon:before, 
@@ -101,8 +102,42 @@ ion-popover-view.fit ion-content {
     max-width: 20rem !important;
 }
 
-@media only screen and (max-width: 950px) {
+.note-editor {
+    position: absolute;
+    bottom: 6%;
+    background: #f1f1f1;
+    width: 70%;
+    max-width: 45rem;
+    margin-left: 15%;
+    margin-right: 15%;
+    border: 2px solid darkgrey;
+}
 
+.pell-content {
+    max-height: 15rem;
+}
+
+/* ionic over-rides this css. restore it in the editor. */
+.pell-content  i {
+    font-style: italic !important;
+}
+
+.pell-actionbar {
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.pell-actionbar-action-color {
+     color: #1565C0; !important;
+}
+
+.bookmark-entry blockquote {
+    margin: 5px 0 10px;
+    padding: 5px 5px;
+    border-left: 2px solid gray;
+}
+
+@media only screen and (max-width: 950px) {
     /* .navbar-button { */
     /* 	min-width: 5vh !important; */
     /* } */
