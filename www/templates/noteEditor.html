@@ -1,0 +1,16 @@
+<div class="modal"  style="max-height: fit-content; background: transparent;">
+  <form ng-submit="handleNoteInput(post)">
+    <ion-header-bar class="bar-positive">
+      <button class="button button-clear button-light" ng-click="closeNoteEditor()">Cancel</button>
+      <h1 class="title">Your Note</h1>
+      <button type="submit" class="button button-clear">Save</button>          
+    </ion-header-bar>
+    <ion-content scrollbar-y="false">
+      <div class="list">
+        <label class="item item-input">
+          <textarea class="textareas" rows="10" id="postMessageInput" ng-model="$parent.post.message" placeholder="What do you want to say?"  autofocus ></textarea>
+        </label>
+      </div>
+    </ion-content>
+  </form>
+</div>

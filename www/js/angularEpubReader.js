@@ -41,7 +41,7 @@
 */
 
 angular.module('epubreader', [])
-.directive('epubreader', function($ionicPopup, $ionicPopover, $ionicActionSheet, $ionicBody, $document, $window) {
+.directive('epubreader', function($ionicPopup, $ionicActionSheet, $ionicModal, $document) {
     return {
 	restrict: "E",
 	scope: {
@@ -375,12 +375,12 @@ angular.module('epubreader', [])
 	    /********************************************************************************/
 	    
 	    $scope.nextPage = function () {
-		$rootScope.$broadcast('epubReaderNextPage', {});
+		$rootScope.$broadcast('epubReaderNextPage', {location: $scope.currentPosition});
 		$scope.state.rendition.next();
 	    };
 
 	    $scope.prevPage = function () {
-		$rootScope.$broadcast('epubReaderPrevPage', {});
+		$rootScope.$broadcast('epubReaderPrevPage', {location: $scope.currentPosition});
 		$scope.state.rendition.prev();		
 	    };
 	    
@@ -389,7 +389,6 @@ angular.module('epubreader', [])
 		    $ionicPopup.prompt({
 			title: 'Location', inputType: 'text', template: `Location to go to (up to ${$scope.state.book.locations.length()})?`})
 			.then(function(answer) {
-			    console.log('starting reposition', answer);
 			    if (!answer) return;
 			    answer = answer.trim();
 			    if (answer == "") return;
@@ -532,15 +531,14 @@ angular.module('epubreader', [])
 			    $scope.state.highlights.push(highlight);
 			    $scope.state.highlights.sort(function (b1, b2) { return ( (b1.location > b2.location) ? 1 : -1 ); });
 			    $scope.saveHighlightstoStorage();
-			    $scope.state.rendition.annotations.highlight($scope.cfiRange, {}, 
-									 (e) => {
-									     $timeout(function () {
-										 // console.log("highlight clicked", savedCFI, e.target);
-										 $scope.cfiRange = savedCFI;
-										 $scope.showHighlightMenu();
-										 e.stopPropagation();
-									     }, 200);
-									 }, 'annotated-highlight');
+			    $scope.state.rendition.annotations.highlight($scope.cfiRange, {}, (e) => {
+				$timeout(function () {
+				    // console.log("highlight clicked", savedCFI, e.target);
+				    $scope.cfiRange = savedCFI;
+				    $scope.showHighlightMenu();
+				    e.stopPropagation();
+				}, 200);
+			    });
 			    
 			    if($scope.contents) {									// cleanup
 				$scope.contents.window.getSelection().removeAllRanges();
@@ -562,29 +560,27 @@ angular.module('epubreader', [])
 		if($scope.cfiRange) {
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
 			text = range.toString();
-			// $ionicPopup.alert({title: 'Deleting Highlight', template: text});
-			console.log('deleting edited range', $scope.cfiRange);
+			// console.log('deleting edited range', $scope.cfiRange);
 
-			// var hIndex = $scope.state.highlights.indexOf($scope.cfiRange);
 			var hIndex = $scope.state.highlights.findIndex(function (element) { return (element.cfi == $scope.cfiRange); });
 			if(hIndex > -1) {
-			    $scope.state.highlights.splice(hIndex, 1);					// delete from reader list
+			    $scope.state.highlights.splice(hIndex, 1);							// delete from reader list
 			    $scope.saveHighlightstoStorage();
 			}
 			else {
-			    console.log('could not find highlight: ', $scope.cfiRange);
+			    // console.log('could not find highlight: ', $scope.cfiRange);
 			}
 			
 			$scope.state.rendition.annotations.remove($scope.cfiRange);
-			$rootScope.$broadcast('epubReaderHighlightDelete', {	       // generate event to pass out to generic angular app watching for it. 
+			$rootScope.$broadcast('epubReaderHighlightDelete', {						// generate event to pass out to generic angular app watching for it. 
 			    text: text, cfiRange: $scope.cfiRange, range: range});
 			
-			$scope.cfiRange = false;							      // clear cfiRange so nothing else looks at it. 
+			$scope.cfiRange = false;									// clear cfiRange so nothing else looks at it. 
 			if($scope.contents) $scope.contents.window.getSelection().removeAllRanges();
 		    });
 		}
 		else {
-		    alert ('trying to delete nothing');
+		    // alert ('trying to delete nothing');
 		}
 	    };
 
@@ -599,15 +595,13 @@ angular.module('epubreader', [])
 			$scope.state.highlights = JSON.parse(stored);
 			$scope.state.highlights.forEach(highlight => {
 			    var cfiRange = highlight.cfi;
-			    $scope.state.rendition.annotations.highlight(cfiRange, {}, 
-									 (e) => {
-									     $timeout(function () {
-							     			 console.log("highlight restored", cfiRange, e, e.target);
-										 $scope.cfiRange = cfiRange;
-										 $scope.showHighlightMenu(); 
-										 e.stopPropagation();
-									     }, 200);
-									 }, 'annotated-highlight');
+			    $scope.state.rendition.annotations.highlight(cfiRange, {}, (e) => {
+				$timeout(function () {
+				    $scope.cfiRange = cfiRange;
+				    $scope.showHighlightMenu(); 
+				    e.stopPropagation();
+				}, 200);
+			    });
 			});
 		    }
 		}
@@ -650,18 +644,19 @@ angular.module('epubreader', [])
 	    };
 
 	    $scope.showHighlightMenu = function () {
-		console.log('showmenu', $scope.cfiRange);
+		// console.log('showmenu', $scope.cfiRange);
 		// remove range display. this kills the selection handles which are distracting at this point in the user process.
 		// then save the highlight. this will add the annotation display so the range is shaded.
-		if($scope.contents) $scope.contents.window.getSelection().removeAllRanges(); 
 
+		if($scope.contents) $scope.contents.window.getSelection().removeAllRanges(); 
 		$scope.createHighlight();								    
 
 		// is there already a note?
 		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
+
+		// action sheet menu items
 		var noteButton = '<i class="icon ion-android-create"></i>Create Note';
 		if(theHighlight && theHighlight.annotationText) noteButton = '<i class="icon ion-android-create"></i>Edit Note';
-
 		var buttons =  [ {text: '<i class="icon ion-checkmark-circled"></i>Save Highlight'}, 
 				 {text: '<i class="icon ion-close-circled"></i>Delete Highlight'},
 				 {text: noteButton},
@@ -709,93 +704,50 @@ angular.module('epubreader', [])
 	    /********************************************************************************/
 	    
 	    $scope.createNote = function () {
-		$scope.showNoteEditor = true;
-		var el = angular.element( document.querySelector( '#noteEditor' ) )[0];
-
-		var defaultNote = "";
 		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
 		if(theHighlight && theHighlight.annotationText) {
-		    defaultNote = theHighlight.annotationText;
+		    $scope.post = {message:  theHighlight.annotationText}; 						// load up the textarea editor with current value.
 		}
 
-		el.content.innerHTML = defaultNote;
-	    }
-
-	    $scope.saveNote = function () {
-		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
-		if(theHighlight) {
-		    if($scope.tentativeHtml)
-			theHighlight.annotationText = $scope.tentativeHtml;
-		    else 
-			delete theHighlight.annotationText;
-
-		    $scope.saveHighlightstoStorage();
-
-		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
-			$rootScope.$broadcast('epubReaderAnnotationSave', {text: theHighlight.text, annotationText: theHighlight.annotationText, cfiRange: $scope.cfiRange, range: range});
+		$ionicModal.fromTemplateUrl('templates/noteEditor.html', {scope: $scope, animation: 'slide-in-up'})
+		    .then(function(modal) {
+			$scope.modal = modal;
+			$scope.modal.show();
 		    });
-		}
 	    };
-	    
-	    $scope.keepNoteHtml = function (html) {
-		// console.log(html);
-		$scope.tentativeHtml = html;
-	    }
 
-	    // probably needs to go into a modal so other events don't get processed.
-	    $scope.pellInit = function () {
-		var el = angular.element( document.querySelector( '#noteEditor' ) )[0];
+	    $scope.handleNoteInput = function (post) {
+		if(post) {
+		    var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
+		    if(theHighlight) {
+			if(post.message) {
+			    theHighlight.annotationText = post.message;
+			    delete post.message;
+			}
+			else 
+			    delete theHighlight.annotationText;
 
-		// Initialize pell on an HTMLElement
-		pell.init({
-		    element: el,
-		    onChange: html => {$scope.keepNoteHtml(html);},
-		    defaultParagraphSeparator: 'div',
-		    // <boolean>, optional, default = false
-		    // Outputs <span style="font-weight: bold;"></span> instead of <b></b>
-		    styleWithCSS: false,
-		    actions: [
-			'bold', 'italic', 'quote', 'paragraph', 'underline',
-			{ name: 'link', result: () => {
-			    if(!window.getSelection().toString()) $ionicPopup.alert({title: "Select Text", content:  'Please select the text you want a link added to.'});
-			    else {
-				answer = window.prompt('Enter the link URL');
-				if(answer === null) {}
-				else if (!$scope.isValidUrl(answer)) $ionicPopup.alert({title: "Error - bad link", content: answer + ' is not a valid url.'});
-				else pell.exec('createLink', answer);
-				
-				// inonic popup needs you to click before you can enter, so it deselects the text needed for the exec to work
-				// $ionicPopup.prompt({
-				//     title: 'Enter link URL', inputType: 'url', template: `Enter a URL for the location`})
-				//     .then(function(answer) {
-				// 	if(!answer) $ionicPopup.alert({title: "Error - bad link", content: "That is not a valid url."});
-				// 	else if(!$scope.isValidUrl(answer))  $ionicPopup.alert({title: "Error - bad link", content: answer + ' is not a valid url.'});
-				// 	else pell.exec('createLink', answer);
-				//     });
-			    }
-			}
-			}, 
-			// spacer
-			{ name: 'blank', icon: '<i class="icon ion-missingname"></i>', title: ''}, 
-			{ name: 'undo', icon: '<i class="icon ion-ios-undo pell-actionbar-action-color"></i>', result: () => pell.exec('undo') },
-			{ name: 'redo', icon: '<i class="icon ion-ios-redo pell-actionbar-action-color"></i>', result: () => pell.exec('redo') },
-			{ name: 'Cancel', icon: '<i class="icon ion-close-circled pell-actionbar-action-color"></i>', title: 'Cancel comment',
-			  result: () => {
-			      $scope.showNoteEditor = false;
-			      $scope.$apply();
-			  }
-			},
-			{ name: 'OK', icon: '<i class="icon ion-checkmark-circled pell-actionbar-action-color"></i>', title: 'Accept comment',
-			  result: () => { 
-			      $scope.showNoteEditor = false;
-			      $scope.saveNote();
-			      $scope.$apply();
-			  }
-			}
-		    ]
-		});
-	    }
-	    
+			$scope.saveHighlightstoStorage();
+			$scope.state.book.getRange($scope.cfiRange).then(function (range) {
+			    $rootScope.$broadcast('epubReaderAnnotationSave', {text: theHighlight.text, annotationText: theHighlight.annotationText, cfiRange: $scope.cfiRange, range: range});
+			});
+		    }
+		}
+		
+		$scope.closeNoteEditor();
+	    };
+
+	    $scope.closeNoteEditor = function () {
+		if($scope.modal) $scope.modal.hide();
+	    };
+
+	    $scope.$on('$destroy', function() {										// Cleanup the modal when we're done with it!
+		$scope.modal.remove();
+	    });
+	    $scope.$on('modal.hidden', function() {
+		$scope.modal.remove();
+	    });
+
 	    /********************************************************************************/
 	    /*                  Handlers for change of location, paging etc.                */
 	    /********************************************************************************/
@@ -814,7 +766,7 @@ angular.module('epubreader', [])
 
 		var bookmark = $scope.state.bookmarks.find(function (element) { 
 		    var location = $scope.state.book.locations.locationFromCfi(element.cfi);
-		    console.log('testing bookmark', location, 'against', startP);
+		    // console.log('testing bookmark', location, 'against', startP);
 		    return ((startP === location) ||
 			    //			((startP <= location) && (location <= endP)) ||  // this should be right, if the location finder works as expected.
 			    (element.cfi == $scope.currentPosition.cfi));
@@ -903,7 +855,7 @@ angular.module('epubreader', [])
 	    // ensure that a click event on a highlight gets selected. epub seems to only do that on a "selected" event.
 	    $scope.onRenditionClick = function (event, contents) {
 		try {
-		    console.log('onRenditionClick');
+		    // console.log('onRenditionClick');
 		    if (event.target.tagName.toLowerCase() == "a" && event.target.href) return;
 		    if (event.target.parentNode.tagName.toLowerCase() == "a" && event.target.parentNode.href) return;
 		    if (window.getSelection().toString().length !== 0) return;
@@ -1178,7 +1130,6 @@ angular.module('epubreader', [])
 	    /********************************************************************************/
 
 	    $scope.loadSettingsFromStorage();
-	    $scope.pellInit();
 	    
 	    try {
 		let ufn = location.search.replace("?", "") || location.hash.replace("#", "") || ($scope.src ? $scope.src : "");

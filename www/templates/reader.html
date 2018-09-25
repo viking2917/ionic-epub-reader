@@ -47,18 +47,19 @@
 	      <div ng-switch on="item.type">
 		<div ng-switch-when="highlight" style="background: rgba(255, 255, 0, 0.4);">
 		  <span><i class="icon custom-icon-small ion-marker">                                   </i>{{item.type}}
-		    <span style="font-size1: xxx-large;"> &bull; </span> {{item.chapterLabel}}</div>
-		<div ng-switch-when="bookmark" style="background1: rgba(255, 255, 0, 0.4);">
+		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}</div>
+		<div ng-switch-when="bookmark">
 		  <span><i style="margin: 0 10px 0px 10px;" class="icon custom-icon-small ion-bookmark"></i>{{item.type}}
-		    <span style="font-size1: xxx-large;"> &bull; </span> {{item.chapterLabel}}</div>
+		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}</div>
 	      </div>
 
 	      <div class="bookmark-entry">
 		<a class="reader-item bookmark-item" style="white-space: normal; line-height: 1.2;" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">
 		  <!-- <div>{{item.chapterLabel}}, Location: {{item.location}}</div> -->
 		  <!-- <a class="reader-item bookmark-item" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">{{item.text}}</a> -->
-		  <blockquote>{{item.text}}</blockquote></a>
+		  <blockquote>{{item.text}}</blockquote>
 		  <span ng-if="item.annotationText" ng-bind-html="item.annotationText"></span>
+		</a>
 		<hr class="bookmarks-hr">
 	      </div>
 	    </div>
@@ -191,10 +192,7 @@
     </div>
   </div>
 
-  <div ng-show="showNoteEditor" id="noteEditor" class="note-editor">
-
-  </div>
-  <div id="extras">
-    <!-- <ul id="highlights"></ul> -->
-  </div>
+</div>
+<div id="extras">
+  <!-- <ul id="highlights"></ul> -->
 </div>

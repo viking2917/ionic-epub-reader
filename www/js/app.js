@@ -9,49 +9,49 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
 .controller('ReaderCtrl', function($scope, $rootScope, $ionicActionSheet, $ionicPopover) {
 
     $rootScope.$on('epubReaderBookmarkSave', function (event, data) {
-    	console.log('bookmark save', event, JSON.stringify(data.bookmark));
+    	console.log('READER_EVENT: bookmark save', event, JSON.stringify(data.bookmark));
     });
 
     $rootScope.$on('epubReaderBookmarkDelete', function (event, data) {
-    	console.log('bookmark save', event, JSON.stringify(data.bookmark));
+    	console.log('READER_EVENT: bookmark save', event, JSON.stringify(data.bookmark));
     });
 	
     $rootScope.$on('epubReaderSaveSettings', function (event, data) {
-    	console.log('save settings requested', event, JSON.parse(data.settings));
+    	console.log('READER_EVENT: save settings requested', event, JSON.parse(data.settings));
     });
 
     $rootScope.$on('epubReaderCurrentLocation', function (event, data) {
-    	console.log('current position set', event, data.position);
+    	console.log('READER_EVENT: current position set', event, data.position);
     });
     
     $rootScope.$on('epubReaderNextPage', function (event, data) {
-    	console.log('paging (next)', event, data);
+    	console.log('READER_EVENT: paging (next)', event, data);
     });
 
     $rootScope.$on('epubReaderPrevPage', function (event, data) {
-    	console.log('paging (prev)', event, data);
+    	console.log('READER_EVENT: paging (prev)', event, data);
     });
 
     $rootScope.$on('epubReaderSetLocation', function (event, data) {
-    	console.log('set location', event, data);
+    	console.log('READER_EVENT: set location', event, data);
     });
 
     $rootScope.$on('epubReaderTextSelected', function (event, data) {
-    	console.log('text selected', event, data);
+    	console.log('READER_EVENT: text selected', event, data);
     });
 
     $rootScope.$on('epubReaderHighlightSave', function (event, data) {
-    	console.log('highlight save requested', event, data);
+    	console.log('READER_EVENT: highlight save requested', event, data);
     });
 
 
     $rootScope.$on('epubReaderHighlightDelete', function (event, data) {
-    	console.log('highlight delete requested', event, data);
+    	console.log('READER_EVENT: highlight delete requested', event, data);
     });
 
     $rootScope.$on('epubReaderAnnotationSave', function (event, data) {
 	// note: delete of annotation comes as a new save of an annotation, with no annotation text.
-    	console.log('annotation save requested', event, data);
+    	console.log('READER_EVENT: annotation save requested', event, data);
     });
 
     // need deleted event and edited event.
