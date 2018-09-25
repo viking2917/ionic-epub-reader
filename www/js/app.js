@@ -6,7 +6,7 @@
 
 angular.module('readerDemo', ['ionic', 'epubreader'])
 
-.controller('ReaderCtrl', function($scope, $rootScope, $ionicActionSheet, $ionicPopover) {
+.controller('ReaderCtrl', function($rootScope) {
 
     $rootScope.$on('epubReaderBookmarkSave', function (event, data) {
     	console.log('READER_EVENT: bookmark save', event, JSON.stringify(data.bookmark));
