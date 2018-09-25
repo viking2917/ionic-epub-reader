@@ -3,7 +3,7 @@
     <name>Ionic Epub Reader</name>
     <description>A sample app demonstrating use of Ionic-epub-reader</description>
     <author email="info@thehawaiiproject.com" href="http://ionicframework.com/">The Hawaii Project</author>
-    <content original-src="index.html" src="http://192.168.1.126:8102" />
+    <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
