@@ -58,7 +58,7 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
     
 })
 
-.run(function($ionicPlatform, $rootScope) {
+.run(function($ionicPlatform) {
 
     // $rootScope.platform = 'android';
 
@@ -87,4 +87,4 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
 
     }
   });
-})
+});

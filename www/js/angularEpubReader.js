@@ -244,7 +244,7 @@ angular.module('epubreader', [])
 		    if($scope.useLocalStorage) localStorage.setItem($scope.state.key, $scope.state.book.locations.save());
 		    console.log("locations generated", $scope.state.book.locations);
 		}).catch(err => console.error("error generating locations", err));
-	    }
+	    };
 	    
 	    $scope.doBook = function (url, opts) {
 		opts = opts || {
@@ -264,10 +264,10 @@ angular.module('epubreader', [])
 		    throw err;
 		}
 		
-		$scope.state.book.ready.then($scope.onBookReady).catch( function (err) { $scope.fatal("error loading book", err, false) });
-		$scope.state.book.loaded.metadata.then($scope.onMetadataLoaded).catch( function (err) { $scope.fatal("error loading metadata", err, false) });
+		$scope.state.book.ready.then($scope.onBookReady).catch( function (err) { $scope.fatal("error loading book", err, false); });
+		$scope.state.book.loaded.metadata.then($scope.onMetadataLoaded).catch( function (err) { $scope.fatal("error loading metadata", err, false); });
 		$scope.state.rendition.on("relocated", $scope.onRenditionRelocatedUpdateIndicators);
-		$scope.state.book.loaded.navigation.then($scope.onNavigationLoaded).catch( function (err) { $scope.fatal("error loading table of contents", err, false) });
+		$scope.state.book.loaded.navigation.then($scope.onNavigationLoaded).catch( function (err) { $scope.fatal("error loading table of contents", err, false); });
 		$scope.state.book.loaded.cover.then($scope.onBookCoverLoaded).catch(err => $scope.fatal("error loading cover", err));
 		$scope.state.rendition.hooks.content.register($scope.applyTheme);
 		$scope.state.rendition.hooks.content.register($scope.loadFonts);
@@ -297,6 +297,7 @@ angular.module('epubreader', [])
 		fi.style.display = "none";
 		fi.type = "file";
 		fi.onchange = event => {
+		    void(event);											// shut up jshint
 		    var reader = new FileReader();
 		    reader.addEventListener("load", () => {
 			var arr = (new Uint8Array(reader.result)).subarray(0, 2);
@@ -322,7 +323,7 @@ angular.module('epubreader', [])
 
 	    $scope.isBookLoaded = function () {
 		return $scope.state.book;
-	    }
+	    };
 
 	    /********************************************************************************/
 	    /*                                 Metadata loading                             */
@@ -417,7 +418,7 @@ angular.module('epubreader', [])
 		}
 	    };
 
-	    $scope.gotoTocItem = function (href, event) {
+	    $scope.gotoTocItem = function (href /* , event */) {
 		console.log("tocClick", href, $scope.state.book.canonical(href));
 		$scope.state.rendition.display(href).catch(err => console.warn("error displaying page", err));
 		$scope.doSidebar();
@@ -442,11 +443,10 @@ angular.module('epubreader', [])
 	    $scope.createBookmark = function () {
 		if($scope.currentPosition) {
 		    let savedP = $scope.currentPosition;
-		    let savedContents = $scope.contents;
 
 		    // bookmark: a cfi, a text extract, a location #. 
 		    $scope.state.book.getRange($scope.currentPosition.cfi).then(function (range) {
-			text = range.toString() || range.startContainer.data.substring(0, 200);
+			var text = range.toString() || range.startContainer.data.substring(0, 200);
 			// console.log(text, range, $scope.currentPosition.cfi);
 
 			let spineItem = $scope.state.book.spine.get($scope.currentPosition.cfi);
@@ -521,9 +521,8 @@ angular.module('epubreader', [])
 			    // Google search need something to hang their hat on.
 			    $scope.lastSavedCfiRange = $scope.cfiRange; 
 			    let savedCFI = $scope.cfiRange;
-			    let savedContents = $scope.contents;
 			    
-			    text = range.toString() || range.startContainer.data.substring(0, 200);
+			    var text = range.toString() || range.startContainer.data.substring(0, 200);
 			    let spineItem = $scope.state.book.spine.get($scope.cfiRange);
 			    let navItem = $scope.state.book.navigation.get(spineItem.href);
 			    let highlight = {type: 'highlight', location: $scope.currentPosition.location, text: text, chapterLabel: navItem.label, cfi: savedCFI};
@@ -559,7 +558,7 @@ angular.module('epubreader', [])
 	    $scope.deleteHighlight = function () {
 		if($scope.cfiRange) {
 		    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
-			text = range.toString();
+			var text = range.toString();
 			// console.log('deleting edited range', $scope.cfiRange);
 
 			var hIndex = $scope.state.highlights.findIndex(function (element) { return (element.cfi == $scope.cfiRange); });
@@ -638,7 +637,7 @@ angular.module('epubreader', [])
 	
 		// generate highlight event.
 		$scope.state.book.getRange($scope.cfiRange).then(function (range) {
-		    text = range.toString();
+		    var text = range.toString();
 		    $rootScope.$broadcast('epubReaderTextSelected', {text: text, cfiRange: $scope.cfiRange, range: range});
 		});
 	    };
@@ -778,7 +777,7 @@ angular.module('epubreader', [])
 	    };
 	    
 	    // reload location on reload of book
-	    $scope.onRenditionStartedRestorePos = function (event) {
+	    $scope.onRenditionStartedRestorePos = function (/* event */) {
 		try {
 		    if($scope.useLocalStorage) {
 			let stored = localStorage.getItem(`${$scope.state.book.key()}:pos`);
@@ -804,7 +803,7 @@ angular.module('epubreader', [])
 	    // paging on swipe events. 
 	    $scope.onRenditionDisplayedTouchSwipe = function (event) {
 		// console.log( 'onRenditionDisplayedTouchSwipe' );
-		$scope.start = null
+		$scope.start = null;
 		$scope.end = null;
 		$scope.moving = false;
 		$scope.listening = false;
@@ -870,7 +869,7 @@ angular.module('epubreader', [])
 			console.log('why no range?');
 		    }
 		    else {
-			box = range.getBoundingClientRect();
+			var box = range.getBoundingClientRect();
 			// consider adding a tolerance and making this a function.
 			if( (event.x > box.left) &&	(event.x < box.right) && (event.y > box.top) &&	(event.y < box.bottom) ) {
 			    // console.log('this range is found', cfiRange);
@@ -911,7 +910,7 @@ angular.module('epubreader', [])
 
 		if( cfiRange ) {
 		    $scope.state.book.getRange(cfiRange).then(function (range) {
-			text = range.toString();
+			var text = range.toString();
 			let url = false;
 			if(engine == 'google') url = "https://www.google.com/search?q="+text;
 			if(engine == 'wikipedia') url = "https://en.wikipedia.org/wiki/Special:Search?search=" + text;
@@ -944,7 +943,7 @@ angular.module('epubreader', [])
 	    /*                            Internal Search                                   */
 	    /********************************************************************************/
 
-	    $scope.onSearchClick = function (event) {
+	    $scope.onSearchClick = function (/* event */) {
 		$scope.doSearch($scope.state.searchQuery.trim()).then(results => {
 		    $scope.state.searchResults = results.slice(0, 200);
 		    Keyboard.hide();
@@ -955,6 +954,7 @@ angular.module('epubreader', [])
 	    $scope.doSearch = function (q) {
 		return Promise.all($scope.state.book.spine.spineItems.map(item => {
 		    return item.load($scope.state.book.load.bind($scope.state.book)).then(doc => {
+			void(doc);											// shut up jshint
 			let results = item.find(q);
 			item.unload();
 			return Promise.resolve(results);
@@ -1030,69 +1030,72 @@ angular.module('epubreader', [])
 			    if (newSelection == selection) $scope.doDictionary(newSelection);
 			    else $scope.doDictionary(null);
 
-			} catch (err) {console.error(`showDictTimeout: ${err.toString()}`)}
+			} catch (err) {console.error(`showDictTimeout: ${err.toString()}`);}
 		    }, 300);
 		} catch (err) {
-		    console.error(`checkDictionary: ${err.toString()}`)
+		    console.error(`checkDictionary: ${err.toString()}`);
 		}
 	    };
 	    
-	    $scope.doDictionary = function (word) {
-		// I have the dictionary turned off right now, to avoid saturating geek1011's server.
-		// console.log('dictionary turned off by default');
+	    
+	    // I have the dictionary turned off right now, to avoid saturating geek1011's server.
+	    $scope.doDictionary = function (/* word */) {
 		return;
-
-		if ($scope.state.lastWord) if ($scope.state.lastWord == word) return;
-		$scope.state.lastWord = word;
-		
-		// if there is no word passed: reset dictionary if it is set. apply to get rid of existing notes.
-		if(!word) {
-		    if($scope.dictionary) {
-			$scope.dictionary = false;
-			$scope.$apply();
-		    }
-		    return;
-		}
-
-		$scope.dictionary = {word: word};
-		
-		console.log(`define ${word}`);
-		let url = `https://dict.geek1011.net/word/${encodeURIComponent(word)}`;
-		fetch(url).then(resp => {
-		    if (resp.status >= 500) throw new Error(`Dictionary not available`);
-		    return resp.json();
-		}).then(obj => {
-		    if (obj.status == "error") throw new Error(`ApiError: ${obj.result}`);
-		    return obj.result;
-		}).then(word => {
-		    // console.log("dictLookup", word);
-		    if (word.info && word.info.trim() != "") $scope.dictionary.info = word.info;
-		    $scope.dictionary.meanings = word.meanings;
-		    if (word.credit && word.credit.trim() != "") {
-			$scope.dictionary.credit = word.credit;
-		    }
-
-		    $scope.$apply();
-
-		}).catch(err => {
-		    try {
-			console.error("dictLookup", err);
-			if (err.toString().toLowerCase().indexOf("not in dictionary") > -1) {
-			    $scope.dictionary.error = "Word not in dictionary.";
-			    $scope.$apply();
-			    return;
-			}
-			if (err.toString().toLowerCase().indexOf("not available") > -1 || err.toString().indexOf("networkerror") > -1 || err.toString().indexOf("failed to fetch") > -1) {
-			    $scope.dictionary.error = "Word not in dictionary.";
-			    $scope.$apply();
-			    return;
-			}
-			$scope.dictionary.error = `Dictionary not available: ${err.toString()}`;
-			$scope.$apply();
-
-		    } catch (err) {}
-		});
 	    };
+
+	    // $scope.doDictionary = function (word) {
+
+	    // 	if ($scope.state.lastWord) if ($scope.state.lastWord == word) return;
+	    // 	$scope.state.lastWord = word;
+		
+	    // 	// if there is no word passed: reset dictionary if it is set. apply to get rid of existing notes.
+	    // 	if(!word) {
+	    // 	    if($scope.dictionary) {
+	    // 		$scope.dictionary = false;
+	    // 		$scope.$apply();
+	    // 	    }
+	    // 	    return;
+	    // 	}
+
+	    // 	$scope.dictionary = {word: word};
+		
+	    // 	console.log(`define ${word}`);
+	    // 	let url = `https://dict.geek1011.net/word/${encodeURIComponent(word)}`;
+	    // 	fetch(url).then(resp => {
+	    // 	    if (resp.status >= 500) throw new Error(`Dictionary not available`);
+	    // 	    return resp.json();
+	    // 	}).then(obj => {
+	    // 	    if (obj.status == "error") throw new Error(`ApiError: ${obj.result}`);
+	    // 	    return obj.result;
+	    // 	}).then(word => {
+	    // 	    // console.log("dictLookup", word);
+	    // 	    if (word.info && word.info.trim() != "") $scope.dictionary.info = word.info;
+	    // 	    $scope.dictionary.meanings = word.meanings;
+	    // 	    if (word.credit && word.credit.trim() != "") {
+	    // 		$scope.dictionary.credit = word.credit;
+	    // 	    }
+
+	    // 	    $scope.$apply();
+
+	    // 	}).catch(err => {
+	    // 	    try {
+	    // 		console.error("dictLookup", err);
+	    // 		if (err.toString().toLowerCase().indexOf("not in dictionary") > -1) {
+	    // 		    $scope.dictionary.error = "Word not in dictionary.";
+	    // 		    $scope.$apply();
+	    // 		    return;
+	    // 		}
+	    // 		if (err.toString().toLowerCase().indexOf("not available") > -1 || err.toString().indexOf("networkerror") > -1 || err.toString().indexOf("failed to fetch") > -1) {
+	    // 		    $scope.dictionary.error = "Word not in dictionary.";
+	    // 		    $scope.$apply();
+	    // 		    return;
+	    // 		}
+	    // 		$scope.dictionary.error = `Dictionary not available: ${err.toString()}`;
+	    // 		$scope.$apply();
+
+	    // 	    } catch (err) {}
+	    // 	});
+	    // };
 	    
 	
 	    $scope.fatal = function (msg, err, usersFault) {
@@ -1106,13 +1109,12 @@ angular.module('epubreader', [])
 		$scope.state.errorInfo = msg + ": " + err.toString();
 
 		$ionicPopup.alert({title: "Error", content: '<p>' + $scope.state.errorInfo + '</p><p>' + $scope.state.errorDescription + '</p>'})
-		    .then(function(result) {
-			void(result);  /* just to get jshint to shut up */
+		    .then(function(/* result */) {
 		    });
-		try {
-		    // if (!usersFault) Raven.captureException(err);
-		    // could log error with Fabric or Raven if desired. 
-		} catch (err) {}
+		// try {
+		//     // if (!usersFault) Raven.captureException(err);
+		//     // could log error with Fabric or Raven if desired. 
+		// } catch (err) {}
 	    };
 
 	    // via: https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
@@ -1157,7 +1159,7 @@ angular.module('epubreader', [])
 	    }
 	},
 
-	link: function(scope, element, attrs) {
+	link: function(/* scope, element, attrs */) {
 	}
-    }
-})
+    };
+});

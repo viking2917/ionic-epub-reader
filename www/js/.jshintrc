@@ -1,0 +1,8 @@
+{
+    "esversion": 6,
+    "undef": true,
+    "unused": true,
+    "predef" : ["ePub", "sanitizeHtml", "cordova", "ionic", "console", "angular", "StatusBar", "Keyboard"],
+    "browser" : true,
+    "jquery" : true
+}
