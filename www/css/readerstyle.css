@@ -74,8 +74,9 @@
 }
 
 .app .readerBar > div {
-    -webkit-flex: 0 0 auto;
-    flex: 0 0 auto;
+    /* needed to remove to fix header centering as noted below */
+    /* -webkit-flex: 0 0 auto; */
+    /* flex: 0 0 auto; */
 }
 
 .app .readerBar .title {
@@ -779,3 +780,18 @@
 }
 
 
+/* because I've introduced a second icon on the right of the header, the title doesn't center correctly. Fix that.  */
+/* via https://stackoverflow.com/questions/22429003/how-to-right-align-flex-item */
+.readerBarBox {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* make the title chunk bigger than the icon containers */
+.title.readerBarBox {
+    flex-grow: 5 !important;
+}
+
+.readerBarBox:first-child > button { margin-right: auto; }
+.readerBarBox:last-child  > button {}
