@@ -88,7 +88,7 @@ then 'ionic serve' will allow the in-app browser window to work.
 ### Loading an ePub file
 
 Once the app is running you should see a button entitled 'Open a Book'. Hit that button and load an epub file, e.g. [Treasure Island](http://www.gutenberg.org/ebooks/120) - the file called
-EPUB (with images) works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as [Standard Ebooks](https://standardebooks.org/).
+_EPUB (with images)_ works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as [Standard Ebooks](https://standardebooks.org/).
 
 
 ## Technologies used in this project
@@ -126,7 +126,9 @@ was not visible. Theoretically setting
 <preference name="KeyboardResize" value="false" />
 ```
 
-should do it, but it seems not to work on Android. I adopted [this workaround](https://github.com/ionic-team/cordova-plugin-ionic-keyboard/issues/8) from @olivermuc. 
+should do it, but it seems not to work on Android. I adopted [this workaround](https://github.com/ionic-team/cordova-plugin-ionic-keyboard/issues/8) from @olivermuc.
+
+Ionic-epub-reader has been tested on iOS and Android devices, Chrome, and to a lessor extent Firefox. Browser bugs entirely possible. :)
 
 ## Acknowledgments
 
