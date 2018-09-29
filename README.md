@@ -1,5 +1,3 @@
-#ionic-epub-reader
-
 An ePub reader for browsers and mobile devices (via Ionic/Angular).
 
 Implemented as an Angular directive, compatible with Ionic / Angular v1, intended for inclusion into other Ionic apps. A sample Ionic app shows how to integrate to a larger Ionic app. Work is currently under way to integrate this reader into [Bookship](https://www.bookshipapp.com), a Social Reading app. 
