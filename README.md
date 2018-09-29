@@ -1,24 +1,26 @@
 #ionic-epub-reader
 
-An ePub reader directive, compatible with ionic / Angular v1, plus a sample app, intended for inclusion into other Ionic apps. Work is currently under way to integrate this reader into [Bookship](https://www.bookshipapp.com), a Social Reading app. 
+An ePub reader for browsers and mobile devices (via Ionic/Angular).
 
-ionic-epub-reader is a reworking of [Patrick G](https://github.com/geek1011)'s excellent [ePubViewer](https://github.com/geek1011/ePubViewer), to make it compatible with [AngularJS] v1 and [Ionic v1](https://ionicframework.com/docs/v1/), to make it more mobile-friendly, and to introduce additional capabilities. The feature set is intended to be comparable to those of major readers such as the Kindle and Kobo apps.
+Implemented as an Angular directive, compatible with Ionic / Angular v1, intended for inclusion into other Ionic apps. A sample Ionic app shows how to integrate to a larger Ionic app. Work is currently under way to integrate this reader into [Bookship](https://www.bookshipapp.com), a Social Reading app. 
+
+ionic-epub-reader is a reworking of [Patrick G](https://github.com/geek1011)'s excellent [ePubViewer](https://github.com/geek1011/ePubViewer), to make it compatible with [AngularJS] v1 and [Ionic v1](https://ionicframework.com/docs/v1/), to make it mobile-friendly, and to introduce additional capabilities. The feature set is intended to be comparable to those of major readers such as the Kindle and Kobo apps.
 
 Key features introduced by Ionic-epub-reader include:
 
-* Bookmarking - Pages can be bookmarked. 
-* Highlighting - Passages can be selected and marked for permanent highlighting
-* Annotation - Highlights can optionally have user-generated Notes attached to them.
-* Integration with external search engines - Searches of Google & Wikipedia can be invoked directly from highlighted text.
+* Bookmarking - pages can be bookmarked. 
+* Highlighting - passages can be selected and marked for permanent highlighting
+* Annotation - highlights can optionally have user-generated notes attached to them.
+* Integration with external search engines - searches of Google & Wikipedia can be invoked directly from highlighted text, with results shown in a new browser window.
 * Paging via swiping
 
-An additional tab has been added which lists all Bookmarks, Highlights and Notes.
+An additional tab has been added which lists all Bookmarks, Highlights and Notes, and allows navigation within the book to each item.
 
 Ionic-epub-reader is intended for integration with other apps. All major reader lifecycle events generate Angular events with the data necessary for external apps to handle storage / reload of the relevant data. The sample app shows handling of those lifecycle events. The primary component is a custom AngularJS Directive encapsulating the viewer. You can easily add this as a module to your own app. 
 
 Optionally, Ionic-epub-reader will also store all user data in localStorage. It is expected this is primarily of use for standalone usage, or for testing. 
 
-This repo also includes a sample ionic App app illustrating use.
+This repo includes a sample ionic App app illustrating use.
 
 ## Installation
 
@@ -61,6 +63,13 @@ Include the custom directive in your index.html file, or in a template.
     </ion-content>
  </ion-pane>
 ```
+
+The directive accepts arguments per the below:
+
+The `<epubreader>` directive accepts arguments:
+
+* `src`: a url pointing to an ePub file to load. If not present, the user is presented with an open file button.
+* `use-local-storage`: true|false, controls whether user data (e.g. bookmarks) are persisted to the browser's localStorage
 
 #### Add module "epubreader" as dependency
 ```js
