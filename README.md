@@ -88,7 +88,7 @@ then 'ionic serve' will allow the in-app browser window to work.
 ### Loading an ePub file
 
 Once the app is running you should see a button entitled 'Open a Book'. Hit that button and load an epub file, e.g. [Treasure Island](http://www.gutenberg.org/ebooks/120) - the file called
-_EPUB (with images)_ works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as [Standard Ebooks](https://standardebooks.org/).
+"_EPUB (with images)_" works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as [Standard Ebooks](https://standardebooks.org/).
 
 
 ## Technologies used in this project
@@ -107,8 +107,9 @@ You will need to have Ionic V1 installed to run the sample app.
 
 This reader contains a number of features the original reader by [Patrick G](https://github.com/geek1011) did not. 
 
-Parts of it are substantially re-written, parts become quite a bit simpler by using the Angular templating system, other parts (styling, for
-example) are mostly unchanged, except to rename some classes to prevent collision with Ionic's built-in styling classes. I have also removed the original project's dependency on jQuery. I have also updated the font selection and made minor improvements (I hope!) to the styling.
+Parts of it are substantially re-written, parts become quite a bit simpler by using the Angular templating system, other parts (styling, for example) are mostly unchanged, except to rename
+some classes to prevent collision with Ionic's built-in styling classes. I have also removed the original project's dependency on jQuery. I have also updated the font selection and made
+minor changes to the styling, particularly to address mobile devices. 
 
 A simpler, pure Angular/Ionic version of that reader, without the extra bells & whistles, can be found here: [angular-epub-reader](https://github.com/viking2917/angular-epub-reader). It is more-or-less a straight AngularJS/Ionic port of [ePubViewer](https://github.com/geek1011/ePubViewer).
 
