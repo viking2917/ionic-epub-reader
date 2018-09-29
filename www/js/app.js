@@ -54,37 +54,46 @@ angular.module('readerDemo', ['ionic', 'epubreader'])
     	console.log('READER_EVENT: annotation save requested', event, data);
     });
 
-    // need deleted event and edited event.
-    
+    $rootScope.$on('epubReaderAnnotationDelete', function (event, data) {
+	// note: delete of annotation comes as a new save of an annotation, with no annotation text.
+    	console.log('READER_EVENT: annotation delete requested', event, data);
+    });
+
+
 })
 
 .run(function($ionicPlatform) {
 
     // $rootScope.platform = 'android';
+    
+    $ionicPlatform.ready(function() {
+	// Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
+	// for form inputs).
+	// The reason we default this to hidden is that native apps don't usually show an accessory bar, at
+	// least on iOS. It's a dead giveaway that an app is using a Web View. However, it's sometimes
+	// useful especially with forms, though we would prefer giving the user a little more room
+	// to interact with the app.
+	if (window.cordova && window.Keyboard) {
+	    window.Keyboard.hideKeyboardAccessoryBar(true);
+	}
+	
+	if (window.StatusBar) {
+	    // Set the statusbar to use the default style, tweak this to
+	    // remove the status bar on iOS or change it to use white instead of dark colors.
+	    
+	    // the stock ionic app does this:
+	    StatusBar.styleDefault();
+	    
+	    // we're going to do this, as the reader is full screen and we don't want the status bar over-lapping our reader.
+	    // if you are integrating the reader into another app, you will likely want to defer this call until you are ready to display the reader.
+	    // actually I set <preference name="StatusBarOverlaysWebView" value="false" /> in config.xml, it seems to do better than the below, which leaves some visual junk on the screen.
+	    // StatusBar.hide();
+	}
+    });
+})
 
-  $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs).
-    // The reason we default this to hidden is that native apps don't usually show an accessory bar, at
-    // least on iOS. It's a dead giveaway that an app is using a Web View. However, it's sometimes
-    // useful especially with forms, though we would prefer giving the user a little more room
-    // to interact with the app.
-    if (window.cordova && window.Keyboard) {
-      window.Keyboard.hideKeyboardAccessoryBar(true);
-    }
+.config(function($ionicConfigProvider) {
 
-    if (window.StatusBar) {
-      // Set the statusbar to use the default style, tweak this to
-      // remove the status bar on iOS or change it to use white instead of dark colors.
-
-	// the stock ionic app does this:
-       StatusBar.styleDefault();
-
-      // we're going to do this, as the reader is full screen and we don't want the status bar over-lapping our reader.
-      // if you are integrating the reader into another app, you will likely want to defer this call until you are ready to display the reader.
-	// actually I set <preference name="StatusBarOverlaysWebView" value="false" /> in config.xml, it seems to do better than the below, which leaves some visual junk on the screen.
-      // StatusBar.hide();
-
-    }
-  });
+    // android pulls titles to the left. This makes our note modal look very wonky. This centers it. 
+    $ionicConfigProvider.navBar.alignTitle('center');
 });

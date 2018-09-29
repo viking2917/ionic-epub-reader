@@ -1,14 +1,15 @@
-<div class="modal"  style="max-height: fit-content; background: transparent;">
+<div class="modal"  style="max-height: fit-content; background: rgba(0,0,0,.1);">
   <form ng-submit="handleNoteInput(post)">
-    <ion-header-bar class="bar-positive">
+    <ion-header-bar class="bar-positive" mode1="ios1">
       <button class="button button-clear button-light" ng-click="closeNoteEditor()">Cancel</button>
       <h1 class="title">Your Note</h1>
       <button type="submit" class="button button-clear">Save</button>          
     </ion-header-bar>
-    <ion-content scrollbar-y="false">
+
+    <ion-content scrollbar-y="false" style1="height: 10rem;">
       <div class="list">
-        <label class="item item-input">
-          <textarea class="textareas" rows="10" id="postMessageInput" ng-model="$parent.post.message" placeholder="What do you want to say?"  autofocus ></textarea>
+	<label class="item item-input">
+	  <textarea rows="10" id="postMessageInput" ng-model="$parent.post.message" placeholder="Enter your note here."  autofocus></textarea>
         </label>
       </div>
     </ion-content>
