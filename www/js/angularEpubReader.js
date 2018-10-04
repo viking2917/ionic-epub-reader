@@ -860,14 +860,27 @@ angular.module('epubreader', [])
 			    var rects = range.getClientRects();
 			    if(rects.length>0) {
 				var lastrect = rects[rects.length - 1];
-				var el = $document[0].createElementNS('http://www.w3.org/2000/svg', 'image');
-				el.setAttribute('x', lastrect.right);
-				el.setAttribute('y', lastrect.y - 9);
-				el.setAttribute('height', 18);
-				el.setAttribute('width', 18);
-				el.setAttribute('href', '../img/_ionicons_svg_md-list-box.svg');
-				el.setAttribute('id', 'IonicReaderIcon_'+h.cfi);						// set an ID so I can delete carefully later.
-				g.appendChild(el);
+				// this should work, but Safari webkit seems not to display images that are href'd. Chrome/Firefox OK.
+				// var el = $document[0].createElementNS('http://www.w3.org/2000/svg', 'image');
+				// el.setAttribute('x', lastrect.right);
+				// el.setAttribute('y', lastrect.y - 9);
+				// el.setAttribute('height', 18);
+				// el.setAttribute('width', 18);
+				// el.setAttributeNS(null, 'fill-opacity', '1.0');
+				// el.setAttribute('href', '../img/_ionicons_svg_md-list-box.svg');
+				// el.setAttribute('xlink:href', '../img/_ionicons_svg_md-list-box.svg');
+				// el.setAttribute('id', 'IonicReaderIcon_'+h.cfi);						// set an ID so I can delete carefully later.
+				// g.appendChild(el);
+
+				var path = $document[0].createElementNS('http://www.w3.org/2000/svg', 'path');
+				// this is a scaled version of the path in '../img/_ionicons_svg_md-list-box.svg'. Render it directly rather than including as a file.
+				path.setAttribute("d", "M14.344,2.25l-10.688,0c-0.776,0 -1.406,0.63 -1.406,1.406l0,10.688c0,0.776 0.63,1.406 1.406,1.406l10.688,0c0.776,0 1.406,-0.63 1.406,-1.406l0,-10.688c0,-0.776 -0.63,-1.406 -1.406,-1.406Zm-3.656,10.688l-5.625,-0.001l0,-1.687l5.625,0l0,1.687Zm2.25,-3.093l-7.875,0l0,-1.688l7.875,0l0,1.688Zm0,-3.094l-7.875,0l0,-1.688l7.875,0l0,1.688Z");
+				var tx = lastrect.right;
+				var ty =  lastrect.y - 9;
+				path.setAttribute("transform", 'translate(' + tx + " " + ty + ")")
+				path.setAttribute('id', 'IonicReaderIcon_'+h.cfi);						// set an ID so I can delete carefully later.
+				path.classList.add('annotation-indicator');
+				g.appendChild(path);
 			    }
 			}
 		    }
@@ -882,7 +895,7 @@ angular.module('epubreader', [])
 		    var g = $scope.gElementForHighlight(h);
 		    if(range && g) {
 			[].forEach.call(g.children, function(node /*, i */) {
-			    if( (node.tagName == "image") && (node.id.indexOf("IonicReaderIcon") > -1)) {
+			    if( (node.tagName == "path") && (node.id.indexOf("IonicReaderIcon") > -1)) {
 				g.removeChild(node);
 			    }
 			});
@@ -896,7 +909,7 @@ angular.module('epubreader', [])
 		    [].forEach.call(svg.children, function(g /* , i */) { 
 			if(g.tagName == "g") {
 			    [].forEach.call(g.children, function(node /* , i */) { 			    
-				if( (node.tagName == "image") && (node.id.indexOf("IonicReaderIcon") > -1)) {
+				if( (node.tagName == "path") && (node.id.indexOf("IonicReaderIcon") > -1)) {
 				    g.removeChild(node);
 				}
 			    });

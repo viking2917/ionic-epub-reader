@@ -728,6 +728,11 @@
     font-size: x-large !important;
 }
 
+.annotation-indicator {
+    fill: #1565C0;
+    fill-opacity: 1.0;
+}
+
 .navbar-button {
     min-width: 5vh !important;
     text-align: center !important;
