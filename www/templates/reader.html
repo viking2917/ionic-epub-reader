@@ -22,11 +22,11 @@
     <div class="sidebar">
       <div class="tab-list">
 	<!-- <div class="button-bar"> -->
-	<a data-tab="toc" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-ios-list-outline" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}"></a>
-	<a data-tab="marks" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-bookmark" ng-click="onTabClick($event, 'marks')" ng-class="{'active': state.activeTab === 'marks'}"></a>
-        <a data-tab="search" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-search" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}"></a>
-        <a data-tab="info" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-information-circled" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}"></a>
-        <a data-tab="settings" class="reader-item button button-stable navbar-button reader-big-button-icon icon ion-gear-a" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}"></a>
+	<a id="tocButton" data-tab="toc" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-ios-list-outline" ng-click="onTabClick($event, 'toc')" ng-class="{'active': state.activeTab === 'toc'}"></a>
+	<a id="bookmarksButton" data-tab="marks" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-bookmark" ng-click="onTabClick($event, 'marks')" ng-class="{'active': state.activeTab === 'marks'}"></a>
+        <a id="searchButton" data-tab="search" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-search" ng-click="onTabClick($event, 'search')" ng-class="{'active': state.activeTab === 'search'}"></a>
+        <a id="infoButton" data-tab="info" class="reader-item button button-stable navbar-button icon reader-big-button-icon ion-information-circled" ng-click="onTabClick($event, 'info')" ng-class="{'active': state.activeTab === 'info'}"></a>
+        <a id="settingsButton" data-tab="settings" class="reader-item button button-stable navbar-button reader-big-button-icon icon ion-gear-a" ng-click="onTabClick($event, 'settings')" ng-class="{'active': state.activeTab === 'settings'}"></a>
 	<!-- </div> -->
 
       </div>
@@ -34,7 +34,7 @@
         <div class="tab" data-tab="toc" ng-show="state.activeTab === 'toc'">
           <div class="toc-list">
 	    <a ng-repeat="item in navigation.toc track by $index"
-	       class="reader-item" ng-click="gotoTocItem(item.href, $event)" ng-bind-html="item.labelHtml"
+	       class="reader-item toc-item" ng-click="gotoTocItem(item.href, $event)" ng-bind-html="item.labelHtml"
 	       data-loc="{{item.href}}"
 	       ng-class="{'active' : item.active}"></a>
 	  </div>
@@ -58,7 +58,7 @@
 		  <!-- <div>{{item.chapterLabel}}, Location: {{item.location}}</div> -->
 		  <!-- <a class="reader-item bookmark-item" ng-click="gotoMarkItem(item)" data-loc="{{item.href}}" ng-class="{'active' : item.active}">{{item.text}}</a> -->
 		  <blockquote>{{item.text}}</blockquote>
-		  <span ng-if="item.annotationText" ng-bind-html="item.annotationText"></span>
+		  <span class="bookmark-entry-annotation" ng-if="item.annotationText" ng-bind-html="item.annotationText"></span>
 		</a>
 		<hr class="bookmarks-hr">
 	      </div>
@@ -73,7 +73,7 @@
           </div>
           <div class="search-results">
 	    <a ng-repeat="result in state.searchResults track by $index"
-	       class="reader-item" ng-click="onResultClick(result.cfi)"><div class="text">{{result.excerpt}}</div></a>
+	       class="reader-item search-result" ng-click="onResultClick(result.cfi)"><div class="text">{{result.excerpt}}</div></a>
 	  </div>
         </div>
         <div class="tab info" data-tab="info" ng-show="state.activeTab === 'info'">
@@ -159,16 +159,16 @@
 
   <div class="readerBar">
     <div class="left readerBarBox">
-      <button ng-click="doOpenBook()" class="button icon navbar-button  reader-big-button-icon ion-ios-cloud-upload"></button>
+      <button ng-click="doGoBack()" class="button back-button icon ion-ios-arrow-back navbar-button  reader-big-button-icon" style="padding-bottom: 0px;"></button>
     </div>
-    <div class="title readerBarBox">
+    <div class="title readerBarBox"  ng-show="state.book" >
       <span class="book-title">{{metadata.title}}</span>
       <span class="divider"> - </span>
       <span class="book-author">{{metadata.author}}</span>
     </div>
     <div class="right readerBarBox" ng-show="state.book" style="justify-content: flex-end;">
-      <button ng-click="toggleBookmark()" class="button icon navbar-button right reader-big-button-icon ion-bookmark" ng-class="{'bookmark-pushed' : state.isBookmarked}"></button>
-      <button ng-click="doSidebar()"      class="button icon navbar-button right reader-big-button-icon ion-android-menu"></button>
+      <button id="bookmark" ng-click="toggleBookmark()" class="button icon navbar-button right reader-big-button-icon ion-bookmark" ng-class="{'bookmark-pushed' : state.isBookmarked}"></button>
+      <button id="sidebar"  ng-click="doSidebar()"      class="button icon navbar-button right reader-big-button-icon ion-android-menu"></button>
     </div>
   </div>
   
@@ -184,11 +184,11 @@
   </div>
   <div ng-show="state.book" class="readerBar">
     <div class="left">
-      <button ng-click="prevPage()" class="button icon ion-ios-arrow-back reader-big-button-icon"></button>
+      <button id="prevPage" ng-click="prevPage()" class="button icon ion-ios-arrow-back reader-big-button-icon"></button>
     </div>
-    <div ng-click="locationClick()" class="loc">{{state.locationString}}</div>
+    <div id="locationEntry" ng-click="locationClick()" class="loc">{{state.locationString}}</div>
     <div class="right">
-      <button ng-click="nextPage()" class="button icon ion-ios-arrow-forward reader-big-button-icon"></button>
+      <button id="nextPage" ng-click="nextPage()" class="button icon ion-ios-arrow-forward reader-big-button-icon"></button>
     </div>
   </div>
 

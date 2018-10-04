@@ -84,20 +84,64 @@ ionic cordova add platform browser
 
 then 'ionic serve' will allow the in-app browser window to work.
 
-
 ### Loading an ePub file
 
 Once the app is running you should see a button entitled 'Open a Book'. Hit that button and load an epub file, e.g. [Treasure Island](http://www.gutenberg.org/ebooks/120) - the file called
 "_EPUB (with images)_" works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as [Standard Ebooks](https://standardebooks.org/).
 
 
-## Technologies used in this project
+### Lifecycle events
 
-- [AngularJS] 
-- [IonicV1]
-- [inAppBrowser]
-- [ePub.js](https://github.com/futurepress/epub.js/)
-- [normalize.css](https://necolas.github.io/normalize.css/) / [sanitizeHtml](https://www.npmjs.com/package/sanitize-html)
+A variety of events are generated at key lifecycle events, to support integration with external applications, for example for external storage of annotations. Events will often return objects describing
+a bookmark or a highlight (optionally including an annotation / note). These structures are:
+
+bookmark:
+
+```
+{
+	type: 'bookmark',
+	cfi: <canonical fragment identifier for the location>,
+	text: <text from roughly the location of the bookmark>,
+	chapterLabel: <text for chapter / division heading >,
+}
+```
+
+highlight:
+
+```
+{
+	type: highlight,
+	cfi: <canonical fragment identifier for the location>,
+	text: <the highlighted text>,
+	(optional) annotationText: <text of note added by user>, 
+	range: <browser Range object>
+}
+```
+
+Note the internal structures carried by the directive code differ slightly from these event objects.
+
+The key lifecycle events and their arguments:
+
+* ```epubReaderBookmarkSave```: issued after a bookmark is saved. carries bookmark as argument
+* ```epubReaderBookmarkDelete```: issued after a bookmark is deleted. carries bookmark as argument
+* ```epubReaderSaveSettings```: issued whenever reader settings are changed (currently, just display options). carries settings object as argument
+* ```epubReaderCurrentLocation```: issued whenever reader location is changed. carries position as argument
+* ```epubReaderNextPage```: issued whenever (next) paging occurs. carries the position BEFORE the page change as argument
+* ```epubReaderPrevPage```: issued whenever (prev) paging occurs. carries the position BEFORE the page change as argument
+* ```epubReaderSetLocation```: issued when the user manually sets a location (page) number. carries the target position as an argument, in the form of a structure containing  {location: <int>, cfi: cfi, bookLength: <int>}
+* ```epubReaderTextSelected```: issued whenever the user selects text, before a highlight is created. carries as argument a structure containing {text, cfi, range} fields.
+* ```epubReaderHighlightSave```: issued whenever a highlight is saved by the user. carries highlight structure as argument. 
+* ```epubReaderHighlightDelete```: issued after a highlight is deleted. The semantics of the reader are that if a highlight is deleted, any attached annotations are automatically deleted as well.
+* ```epubReaderAnnotationSave```: issued whenever an annotation / note is saved by the user. carries the highlight structure as argument, that the annotation is attached to, and the annotationText field will be present with the highlight.
+* ```epubReaderAnnotationDelete```: issued after an annotation is deleted. This does not delete the associated highlight.
+
+The example app shows how to monitors these events, e.g.:
+
+```
+$rootScope.$on('epubReaderBookmarkSave', function (event, data) {
+    	console.log('READER_EVENT: bookmark save', event, JSON.stringify(data.bookmark));
+    });
+```
 
 ### Prerequisites
 
@@ -111,7 +155,28 @@ Parts of it are substantially re-written, parts become quite a bit simpler by us
 some classes to prevent collision with Ionic's built-in styling classes. I have also removed the original project's dependency on jQuery. I have also updated the font selection and made
 minor changes to the styling, particularly to address mobile devices. 
 
-A simpler, pure Angular/Ionic version of that reader, without the extra bells & whistles, can be found here: [angular-epub-reader](https://github.com/viking2917/angular-epub-reader). It is more-or-less a straight AngularJS/Ionic port of [ePubViewer](https://github.com/geek1011/ePubViewer).
+A simpler, pure Angular/Ionic version of that reader, without the extra bells & whistles, can be found here: [angular-epub-reader](https://github.com/viking2917/angular-epub-reader). It is
+more-or-less a straight AngularJS/Ionic port of [ePubViewer](https://github.com/geek1011/ePubViewer).
+
+## Tests
+
+Tests are implemented via [Testcafe])(https://www.testcafe.com), and are located in the `tests` directory. Installing testcafe is straightforward:
+
+```
+npm install -g testcafe
+npm install testcafe-angular-selectors
+```
+
+I also had to do this (your mileage may vary):
+```
+npm link testcafe
+```
+
+to run the tests, go to the project directory and:
+
+```
+./tests/run.bash
+```
 
 ## License
 
@@ -130,6 +195,14 @@ was not visible. Theoretically setting
 should do it, but it seems not to work on Android. I adopted [this workaround](https://github.com/ionic-team/cordova-plugin-ionic-keyboard/issues/8) from @olivermuc.
 
 Ionic-epub-reader has been tested on iOS and Android devices, Chrome, and to a lessor extent Firefox. Browser bugs entirely possible. :)
+
+## Technologies used in this project
+
+- [AngularJS] 
+- [IonicV1]
+- [inAppBrowser]
+- [ePub.js](https://github.com/futurepress/epub.js/)
+- [normalize.css](https://necolas.github.io/normalize.css/) / [sanitizeHtml](https://www.npmjs.com/package/sanitize-html)
 
 ## Acknowledgments
 
