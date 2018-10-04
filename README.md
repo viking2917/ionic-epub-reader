@@ -52,7 +52,7 @@ Modify your index.html file to include the following:
 <script src="js/angularEpubReader.js"></script>
 ```
 
-Include the custom directive in your index.html file, or in a template.
+Include the custom directive in your index.html file, or in a template (see for example the file ```tab-reader.html``` in the example app).
 
 ```html
 <ion-pane>
@@ -68,8 +68,11 @@ The `<epubreader>` directive accepts arguments:
 
 * `src`: a url pointing to an ePub file to load. If not present, the user is presented with an open file button.
 * `use-local-storage`: true|false, controls whether user data (e.g. bookmarks) are persisted to the browser's localStorage
+* `highlight-array`: optional. An array of highlights to be loaded to the book after load is complete. highlights should consist of a cfi field, and optionally an annotationText field for annotations. see `controllers.js` for an example.  to be loaded to the book after load is complete.
+*  `bookmark-array`: an array of bookmarks. see `controllers.js` for an example. 
 
 #### Add module "epubreader" as dependency
+
 ```js
 angular.module('starter', ['ionic', 'epubreader'])
 ```
