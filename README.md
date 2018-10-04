@@ -69,7 +69,7 @@ The `<epubreader>` directive accepts arguments:
 * `src`: a url pointing to an ePub file to load. If not present, the user is presented with an open file button.
 * `use-local-storage`: true|false, controls whether user data (e.g. bookmarks) are persisted to the browser's localStorage
 * `highlight-array`: optional. An array of highlights to be loaded to the book after load is complete. highlights should consist of a cfi field, and optionally an annotationText field for annotations. see `controllers.js` for an example.  
-*  `bookmark-array`: an array of bookmarks to be loaded to the book after load is complete. see `controllers.js` for an example. 
+*  `bookmark-array`: optional. An array of bookmarks to be loaded to the book after load is complete. see `controllers.js` for an example. 
 
 #### Add module "epubreader" as dependency
 
@@ -127,16 +127,16 @@ The key lifecycle events and their arguments:
 
 * ```epubReaderBookmarkSave```: issued after a bookmark is saved. carries bookmark as argument
 * ```epubReaderBookmarkDelete```: issued after a bookmark is deleted. carries bookmark as argument
+* ```epubReaderHighlightSave```: issued whenever a highlight is saved by the user. carries highlight structure as argument. 
+* ```epubReaderHighlightDelete```: issued after a highlight is deleted. The semantics of the reader are that if a highlight is deleted, any attached annotations are automatically deleted as well.
+* ```epubReaderAnnotationSave```: issued whenever an annotation / note is saved by the user. carries the highlight structure as argument, that the annotation is attached to, and the annotationText field will be present with the highlight.
+* ```epubReaderAnnotationDelete```: issued after an annotation is deleted. This does not delete the associated highlight.
 * ```epubReaderSaveSettings```: issued whenever reader settings are changed (currently, just display options). carries settings object as argument
 * ```epubReaderCurrentLocation```: issued whenever reader location is changed. carries position as argument
 * ```epubReaderNextPage```: issued whenever (next) paging occurs. carries the position BEFORE the page change as argument
 * ```epubReaderPrevPage```: issued whenever (prev) paging occurs. carries the position BEFORE the page change as argument
 * ```epubReaderSetLocation```: issued when the user manually sets a location (page) number. carries the target position as an argument, in the form of a structure containing  {location: <int>, cfi: cfi, bookLength: <int>}
 * ```epubReaderTextSelected```: issued whenever the user selects text, before a highlight is created. carries as argument a structure containing {text, cfi, range} fields.
-* ```epubReaderHighlightSave```: issued whenever a highlight is saved by the user. carries highlight structure as argument. 
-* ```epubReaderHighlightDelete```: issued after a highlight is deleted. The semantics of the reader are that if a highlight is deleted, any attached annotations are automatically deleted as well.
-* ```epubReaderAnnotationSave```: issued whenever an annotation / note is saved by the user. carries the highlight structure as argument, that the annotation is attached to, and the annotationText field will be present with the highlight.
-* ```epubReaderAnnotationDelete```: issued after an annotation is deleted. This does not delete the associated highlight.
 
 The example app shows how to monitors these events, e.g.:
 
@@ -154,7 +154,7 @@ You will need to have Ionic V1 installed to run the sample app.
 
 This reader contains a number of features the original reader by [Patrick G](https://github.com/geek1011) did not. 
 
-Parts of it are substantially re-written, parts become quite a bit simpler by using the Angular templating system, other parts (styling, for example) are mostly unchanged, except to rename
+Parts of it are substantially re-written, parts become simpler by using the Angular templating system, other parts (styling, for example) are mostly unchanged, except to rename
 some classes to prevent collision with Ionic's built-in styling classes. I have also removed the original project's dependency on jQuery. I have also updated the font selection and made
 minor changes to the styling, particularly to address mobile devices. 
 
@@ -163,7 +163,7 @@ more-or-less a straight AngularJS/Ionic port of [ePubViewer](https://github.com/
 
 ## Tests
 
-Tests are implemented via [Testcafe])(https://www.testcafe.com), and are located in the `tests` directory. Installing testcafe is straightforward:
+Tests are implemented via [Testcafe](https://www.testcafe.com), and are located in the `tests` directory. Installing testcafe is straightforward:
 
 ```
 npm install -g testcafe
@@ -209,7 +209,7 @@ Ionic-epub-reader has been tested on iOS and Android devices, Chrome, and to a l
 
 ## Acknowledgments
 
-Greatful thanks to 
+Grateful thanks to 
 
 * [Patrick G](https://github.com/geek1011), the original author of [ePubViewer](https://github.com/geek1011/ePubViewer)- his reader code was straightforward to understand, adapt and extend.
 * [Futurepress](http://futurepress.org), for creating ePub.js[https://github.com/futurepress/epub.js/] in the first place. 
