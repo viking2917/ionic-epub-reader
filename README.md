@@ -68,8 +68,8 @@ The `<epubreader>` directive accepts arguments:
 
 * `src`: a url pointing to an ePub file to load. If not present, the user is presented with an open file button.
 * `use-local-storage`: true|false, controls whether user data (e.g. bookmarks) are persisted to the browser's localStorage
-* `highlight-array`: optional. An array of highlights to be loaded to the book after load is complete. highlights should consist of a cfi field, and optionally an annotationText field for annotations. see `controllers.js` for an example.  to be loaded to the book after load is complete.
-*  `bookmark-array`: an array of bookmarks. see `controllers.js` for an example. 
+* `highlight-array`: optional. An array of highlights to be loaded to the book after load is complete. highlights should consist of a cfi field, and optionally an annotationText field for annotations. see `controllers.js` for an example.  
+*  `bookmark-array`: an array of bookmarks to be loaded to the book after load is complete. see `controllers.js` for an example. 
 
 #### Add module "epubreader" as dependency
 
