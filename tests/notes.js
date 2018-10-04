@@ -78,7 +78,7 @@ test('Reader test', async t => {
 	.switchToMainWindow()
 
 	.click(button.withText('Edit Note'))
-	.typeText(AngularJSSelector.byModel('$parent.post.message'), ' again')
+	.typeText(AngularJSSelector.byModel('$parent.post.message'), 'This is a note again')
 	.wait(500)
 	.click(button.withText('Save'))
 
