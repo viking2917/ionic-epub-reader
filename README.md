@@ -42,7 +42,7 @@ cordova plugin add cordova-plugin-statusbar
 Modify your index.html file to include the following:
 
 ```html
-<link rel="stylesheet" href="lib/normalize.min.css">
+<link href="lib/normalize.min.css" rel="stylesheet">
 <link href="css/readerstyle.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i" rel="stylesheet">
