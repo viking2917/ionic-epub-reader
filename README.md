@@ -20,6 +20,8 @@ Optionally, Ionic-epub-reader will also store all user data in localStorage. It 
 
 This repo includes a sample ionic App app illustrating use.
 
+Try the [live demo](https://s3-us-west-2.amazonaws.com/readerdemo/www/index.html).
+
 ## Installation
 
 Start a new Ionic v1 project as follows:
