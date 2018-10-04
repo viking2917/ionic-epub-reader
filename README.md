@@ -93,8 +93,10 @@ then 'ionic serve' will allow the in-app browser window to work.
 
 ### Loading an ePub file
 
-Once the app is running you should see a button entitled 'Open a Book'. Hit that button and load an epub file, e.g. [Treasure Island](http://www.gutenberg.org/ebooks/120) - the file called
-"_EPUB (with images)_" works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as [Standard Ebooks](https://standardebooks.org/).
+Once the app is running you should see a button entitled 'Open reader'. Hit that button and load an epub file, e.g. [Treasure Island](http://www.gutenberg.org/ebooks/120) - the file called
+"_EPUB (with images)_" works nicely. Ionic-epub-reader has been tested with works from [Project Gutenburg](http://www.gutenberg.org/) as well as
+[Standard Ebooks](https://standardebooks.org/). The button 'Treasure Island' loads a prestored version of Treasure Island; 'Treasure Island w/annotations' loads the book with some
+pre-defined annotations.
 
 
 ### Lifecycle events
@@ -117,7 +119,7 @@ highlight:
 
 ```
 {
-	type: highlight,
+	type: 'highlight',
 	cfi: <canonical fragment identifier for the location>,
 	text: <the highlighted text>,
 	(optional) annotationText: <text of note added by user>, 
@@ -129,18 +131,18 @@ Note the internal structures carried by the directive code differ slightly from 
 
 The key lifecycle events and their arguments:
 
-* ```epubReaderBookmarkSave```: issued after a bookmark is saved. carries bookmark as argument
-* ```epubReaderBookmarkDelete```: issued after a bookmark is deleted. carries bookmark as argument
-* ```epubReaderHighlightSave```: issued whenever a highlight is saved by the user. carries highlight structure as argument. 
+* ```epubReaderBookmarkSave```: issued after a bookmark is saved; carries bookmark as argument
+* ```epubReaderBookmarkDelete```: issued after a bookmark is deleted; carries bookmark as argument
+* ```epubReaderHighlightSave```: issued whenever a highlight is saved by the user; carries highlight structure as argument. 
 * ```epubReaderHighlightDelete```: issued after a highlight is deleted. The semantics of the reader are that if a highlight is deleted, any attached annotations are automatically deleted as well.
-* ```epubReaderAnnotationSave```: issued whenever an annotation / note is saved by the user. carries the highlight structure as argument, that the annotation is attached to, and the annotationText field will be present with the highlight.
+* ```epubReaderAnnotationSave```: issued whenever an annotation / note is saved by the user. Carries the highlight structure as argument, that the annotation is attached to, and the annotationText field will be present with the highlight.
 * ```epubReaderAnnotationDelete```: issued after an annotation is deleted. This does not delete the associated highlight.
-* ```epubReaderSaveSettings```: issued whenever reader settings are changed (currently, just display options). carries settings object as argument
-* ```epubReaderCurrentLocation```: issued whenever reader location is changed. carries position as argument
-* ```epubReaderNextPage```: issued whenever (next) paging occurs. carries the position BEFORE the page change as argument
-* ```epubReaderPrevPage```: issued whenever (prev) paging occurs. carries the position BEFORE the page change as argument
-* ```epubReaderSetLocation```: issued when the user manually sets a location (page) number. carries the target position as an argument, in the form of a structure containing  {location: <int>, cfi: cfi, bookLength: <int>}
-* ```epubReaderTextSelected```: issued whenever the user selects text, before a highlight is created. carries as argument a structure containing {text, cfi, range} fields.
+* ```epubReaderSaveSettings```: issued whenever reader settings are changed (currently, just display options); carries settings object as argument
+* ```epubReaderCurrentLocation```: issued whenever reader location is changed; carries position as argument
+* ```epubReaderNextPage```: issued whenever (next) paging occurs; carries the position BEFORE the page change as argument
+* ```epubReaderPrevPage```: issued whenever (prev) paging occurs; carries the position BEFORE the page change as argument
+* ```epubReaderSetLocation```: issued when the user manually sets a location (page) number. Carries the target position as an argument, in the form of a structure containing  {location: <int>, cfi: cfi, bookLength: <int>}
+* ```epubReaderTextSelected```: issued whenever the user selects text, before a highlight is created; carries as argument a structure containing {text, cfi, range} fields.
 
 The example app shows how to monitors these events, e.g.:
 
@@ -167,7 +169,7 @@ more-or-less a straight AngularJS/Ionic port of [ePubViewer](https://github.com/
 
 ### Changes to epub.js.
 
-This directive uses the [ePub.js] in a slightly modified form, to enable selection and highlighting to work on mobile devices. In particular, the "onSelectionChange" handler in epub.js (~
+This directive uses [ePub.js] in a slightly modified form, to enable selection and highlighting to work on mobile devices. In particular, the "onSelectionChange" handler in epub.js (~
 line 4842) is changed to have a 2 second endTimeout instead of 250 milliseconds. This gives the user time to adjust the drag handles on mobile devices - otherwise the event fires so quickly
 that selection is assumed to be done by the system before the user can intervene to change the range selected. Hacky, I know. Open to better suggestions.
 
@@ -214,7 +216,7 @@ Ionic-epub-reader has been tested on iOS and Android devices, Chrome, and to a l
 - [AngularJS] 
 - [IonicV1]
 - [inAppBrowser]
-- [ePub.js](https://github.com/futurepress/epub.js/)
+- [ePub.js]
 - [normalize.css](https://necolas.github.io/normalize.css/) / [sanitizeHtml](https://www.npmjs.com/package/sanitize-html)
 
 ## Acknowledgments
@@ -227,3 +229,4 @@ Grateful thanks to
 [angularjs]:http://angularjs.org
 [ionicV1]:https://ionicframework.com/docs/v1/
 [inAppBrowser]:https://github.com/apache/cordova-plugin-inappbrowser
+[ePub.js]:https://github.com/futurepress/epub.js/
