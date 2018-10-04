@@ -1,6 +1,6 @@
-An ePub reader for browsers and mobile devices (via Ionic/Angular).
+A mobile-friendly ePub reader for browsers and mobile devices (via Ionic/Angular).
 
-Implemented as an Angular directive, compatible with Ionic / Angular v1, intended for inclusion into other Ionic apps. A sample Ionic app shows how to integrate to a larger Ionic app. Work is currently under way to integrate this reader into [Bookship](https://www.bookshipapp.com), a Social Reading app. 
+Implemented as an Angular directive, compatible with Ionic / Angular v1, intended for inclusion into other Ionic apps and for use on mobile devices. A sample Ionic app shows how to integrate to a larger Ionic app. Work is currently under way to integrate this reader into [Bookship](https://www.bookshipapp.com), a Social Reading app. 
 
 ionic-epub-reader is a reworking of [Patrick G](https://github.com/geek1011)'s excellent [ePubViewer](https://github.com/geek1011/ePubViewer), to make it compatible with [AngularJS] v1 and [Ionic v1](https://ionicframework.com/docs/v1/), to make it mobile-friendly, and to introduce additional capabilities. The feature set is intended to be comparable to those of major readers such as the Kindle and Kobo apps.
 
@@ -44,13 +44,17 @@ Modify your index.html file to include the following:
 ```html
 <link rel="stylesheet" href="lib/normalize.min.css">
 <link href="css/readerstyle.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Arbutus+Slab" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Spectral" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Libre+Baskerville" rel="stylesheet">
 <script src="lib/sanitize-html.min.js"></script>
 <script src="lib/jszip.min.js"></script>
-<script src="lib/epub.js"></script>
+<script src="lib/epub.v0.3.66.js"></script>
 <script src="js/angularEpubReader.js"></script>
 ```
+
+NOTE: This directive uses a slightly modified version of epub.js, see below.
 
 Include the custom directive in your index.html file, or in a template (see for example the file ```tab-reader.html``` in the example app).
 
@@ -73,7 +77,7 @@ The `<epubreader>` directive accepts arguments:
 
 #### Add module "epubreader" as dependency
 
-```js
+```
 angular.module('starter', ['ionic', 'epubreader'])
 ```
 
@@ -160,6 +164,12 @@ minor changes to the styling, particularly to address mobile devices.
 
 A simpler, pure Angular/Ionic version of that reader, without the extra bells & whistles, can be found here: [angular-epub-reader](https://github.com/viking2917/angular-epub-reader). It is
 more-or-less a straight AngularJS/Ionic port of [ePubViewer](https://github.com/geek1011/ePubViewer).
+
+### Changes to epub.js.
+
+This directive uses the [ePub.js] in a slightly modified form, to enable selection and highlighting to work on mobile devices. In particular, the "onSelectionChange" handler in epub.js (~
+line 4842) is changed to have a 2 second endTimeout instead of 250 milliseconds. This gives the user time to adjust the drag handles on mobile devices - otherwise the event fires so quickly
+that selection is assumed to be done by the system before the user can intervene to change the range selected. Hacky, I know. Open to better suggestions.
 
 ## Tests
 
