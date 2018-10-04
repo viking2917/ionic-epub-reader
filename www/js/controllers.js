@@ -75,7 +75,8 @@ angular.module('readerDemo.controllers', [])
 	    $state.go('tab.reader', {epubUrl: 'https://standardebooks.org/ebooks/robert-louis-stevenson/treasure-island/milo-winter/dist/robert-louis-stevenson_treasure-island.epub'} );
 	}
 	else {
-	    let hls = [{cfi: "epubcfi(/6/14[chapter-1.xhtml]!/4/2[part-1]/2[chapter-1]/28,/1:469,/1:585)"}, 
+	    let hls = [{cfi: "epubcfi(/6/14[chapter-1.xhtml]!/4/2[part-1]/2[chapter-1]/8/2,/2/1:1,/6/1:29)"},
+		       {cfi: "epubcfi(/6/14[chapter-1.xhtml]!/4/2[part-1]/2[chapter-1]/28,/1:469,/1:585)"}, 
 		       {cfi: "epubcfi(/6/18[chapter-3.xhtml]!/4/2[part-1]/2[chapter-3]/2/4,/1:0,/1:14)",
 			annotationText: "This is an example note. Stevenson made up the idea of the Black Spot - not a real pirate thing..."}];
 	    let bms = [{cfi: "epubcfi(/6/14[chapter-1.xhtml]!/4/2[part-1]/2[chapter-1]/38/4/2/1:0)"}, 

@@ -24,7 +24,7 @@ const tocItem5 =  Selector('.toc-item').nth(5);
 const marks = Selector(".bookmark-item");
 const mark3 =  Selector(".bookmark-item").nth(2);
 
-const theHighlight = Selector(".bookmark-item").nth(0);
+const theHighlight = Selector(".bookmark-item").nth(1);
 const theSearchButton = Selector(".search-button");
 
 const searchResults  = Selector(".search-result");
@@ -35,7 +35,7 @@ const theP = Selector("p").withText("house shaking");
 
 const theNote = Selector("span.bookmark-entry-annotation").withText('This is a note again');
 
-const blackspotHighlight = Selector(".bookmark-item").nth(3);
+const blackspotHighlight = Selector(".bookmark-item").nth(4);
 const blackspot = Selector("span").withText("The Black Spot");
 
 
@@ -54,7 +54,7 @@ test('Reader test', async t => {
 	.click(bookmarksButton)  .wait(1000)
 
     // check if bookmarks got loaded
-	.expect(marks.count).eql(4)
+	.expect(marks.count).eql(5)
 
     // test clicking bookmarked items
 	.hover(mark3)
