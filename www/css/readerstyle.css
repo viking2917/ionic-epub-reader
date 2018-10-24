@@ -714,14 +714,14 @@
 }
 
 .ion-wikipedia {
-    content: url(../img/WikipediaW.svg);
+    content: url(../images/WikipediaW.svg);
 }
 
 .ion-google {
-    content: url(../img/Google__G__Logo.svg);
+    content: url(../images/Google__G__Logo.svg);
 }
 .ion-marker {
-    content: url(../img/pencil_straight.svg);
+    content: url(../images/pencil_straight.svg);
 }
 
 .ionicon-x-large:before {

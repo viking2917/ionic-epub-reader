@@ -49,6 +49,7 @@ angular.module('epubreader', [])
 	    useLocalStorage: '=',
 	    highlightArray: '=',
 	    bookmarkArray: '=',
+	    startLocation: '=',
 	},
 
 	templateUrl: 'templates/reader.html',
@@ -236,14 +237,10 @@ angular.module('epubreader', [])
 		let stored = $scope.useLocalStorage ? localStorage.getItem($scope.state.key) : false;
 		console.log("storedLocations", typeof stored == "string" ? stored.substr(0, 40) + "..." : stored);
 
+		// they will be displayed later.
 		$scope.loadBookmarksfromStorage();
 		$scope.loadHighlightsfromStorage();
 		$scope.updateGlobalLocationsList();
-
-		// I hate this timeout but the render event from epubjs comes before the page is done rendering, so the SVGs aren't around yet to hang things off of.
-		$timeout(function () { 
-		    $scope.displayAnnotationIcons();
-		}, 1500); 
 
 		if (stored) return $scope.state.book.locations.load(stored);
 		console.log("generating locations");
@@ -253,6 +250,36 @@ angular.module('epubreader', [])
 		}).catch(err => console.error("error generating locations", err));
 	    };
 	    
+	    $scope.displayAnnotations = function () {
+		$timeout(function () {
+		    $scope.state.bookmarks.forEach(bm => {
+			$scope.state.rendition.annotations.remove(bm.cfi);
+			$scope.state.rendition.annotations.mark(bm.cfi, {}, 
+								(e) => {
+							     	    console.log("mark clicked", bm, e);
+								});
+		    });
+		    
+		    $scope.state.highlights.forEach(newhl => {
+			$scope.state.rendition.annotations.remove(newhl.cfi);
+			$scope.state.rendition.annotations.highlight(newhl.cfi, {}, (e) => {
+			    $timeout(function () {
+				$scope.cfiRange = newhl.cfi;
+				$scope.showHighlightMenu(); 
+				e.stopPropagation();
+			    }, 200);
+			} /* , 'annotated-highlight' */);
+
+			if('annotationText' in newhl) {
+			    $scope.displayAnnotationIcon(newhl);
+			}
+
+		    });
+		    // short timeout. the long timeout is needed on load, handled elsewhere
+		}, 100);												
+
+	    };
+
 	    $scope.doBook = function (url, opts) {
 		opts = opts || {
 		    encoding: "epub"
@@ -273,21 +300,19 @@ angular.module('epubreader', [])
 
 		$scope.state.book.ready.then($scope.onBookReady).catch( function (err) { $scope.fatal("error loading book", err, false); });
 		$scope.state.book.loaded.metadata.then($scope.onMetadataLoaded).catch( function (err) { $scope.fatal("error loading metadata", err, false); });
-		$scope.state.rendition.on("relocated", $scope.onRenditionRelocatedUpdateIndicators);
 		$scope.state.book.loaded.navigation.then($scope.onNavigationLoaded).catch( function (err) { $scope.fatal("error loading table of contents", err, false); });
 		$scope.state.book.loaded.cover.then($scope.onBookCoverLoaded).catch(err => $scope.fatal("error loading cover", err));
 		$scope.state.rendition.hooks.content.register($scope.applyTheme);
 		$scope.state.rendition.hooks.content.register($scope.loadFonts);
 		$scope.state.rendition.on("relocated", $scope.onRenditionRelocated);
-		$scope.state.rendition.on("relocated", $scope.displayAnnotationIcons);					// render events come too soon; so redraw icons every page. ick.
-		$scope.state.rendition.on("relocated", $scope.onRenditionRelocatedSavePos);
-		$scope.state.rendition.on("started", $scope.onRenditionStartedRestorePos);
 		$scope.state.rendition.on("displayError", $scope.fatal);
  		$scope.state.rendition.on("touchstart", $scope.onRenditionDisplayedTouchSwipe);
 		$scope.state.rendition.on("click", $scope.onRenditionClick);
 		$scope.state.rendition.on("selected", $scope.onRangeSelected);
 
-		$scope.state.rendition.display();
+		$scope.state.rendition.display().then(function () {
+		    $scope.onLoadRestorePos();
+		});
 
 		// I have the dictionary turned off right now, to avoid saturating geek1011's dictionary server.
 		console.log('dictionary turned off by default');
@@ -299,6 +324,8 @@ angular.module('epubreader', [])
 	    $scope.doGoBack = function () {
 		$ionicHistory.goBack();
 		$ionicTabsDelegate.showBar(true);
+
+		$rootScope.$broadcast('epubReaderExit', {});
 	    };
 
 	    $scope.doOpenBook = function () {
@@ -458,7 +485,7 @@ angular.module('epubreader', [])
 		    try {
 		    // bookmark: a cfi, a text extract, a location #. 
 		    $scope.state.book.getRange($scope.currentPosition.cfi).then(function (range) {
-			let bookmark = $scope.markFromCfi(savedP.cfi, range, 'bookmark');
+			let bookmark = $scope.markFromCfi(savedP.cfi, range, 'bookmark', false);
 			$scope.state.isBookmarked = true;
 			$scope.state.bookmarks.push(bookmark);
 			$scope.updateGlobalLocationsList();
@@ -488,6 +515,7 @@ angular.module('epubreader', [])
 			$scope.state.rendition.annotations.remove($scope.currentPosition.cfi, "mark");	                // delete from rendition list
 			// $ionicPopup.alert({title: 'Deleted Bookmark', template: $scope.currentPosition.cfi});		// notify any external apps
 			
+			if(Array.isArray(deletedB)) deletedB = deletedB[0];
 			$rootScope.$broadcast('epubReaderBookmarkDelete', {bookmark: deletedB});
 		    }
 		}
@@ -498,32 +526,40 @@ angular.module('epubreader', [])
 	    };
 
 	    $scope.loadBookmarksfromStorage = function () {
-		if($scope.useLocalStorage) {
-		    let stored = localStorage.getItem(`${$scope.state.book.key()}:bookmarks`);
-		    if(stored) $scope.state.bookmarks = JSON.parse(stored);
-		    else $scope.state.bookmarks = [];
-		}
-
-		// merge passed in bookmarks
-		if ($scope.bookmarkArray) {
+		if ($scope.bookmarkArray) {										// add passed in bookmarks
 		    $scope.bookmarkArray.forEach(bm => {
 			var hIndex = $scope.state.bookmarks.findIndex(function (element) { return (element.cfi == bm.cfi); });
 			if(hIndex < 0) {
 			    $scope.state.book.getRange(bm.cfi).then(function (range) {					// fill in all the other fields so only cfi needs be stored.
-				let newbm = $scope.markFromCfi(bm.cfi, range, 'bookmark');
+				let newbm = $scope.markFromCfi(bm.cfi, range, 'bookmark', false);
 				$scope.state.bookmarks.push(newbm);
 			    });
 			}
 		    });
 		}
+		else if($scope.useLocalStorage) {									// only use local storage if no bookmarks passed in.
+		    let stored = localStorage.getItem(`${$scope.state.book.key()}:bookmarks`);
+		    if(stored) $scope.state.bookmarks = JSON.parse(stored);
+		    else $scope.state.bookmarks = [];
+		}
+	    };
 
-		$scope.state.bookmarks.forEach(bm => {
-		    $scope.state.rendition.annotations.mark(bm.cfi, {}, 
-							    (e) => {
-							     	console.log("mark clicked", bm, e);
-							    });
-		});
-		
+	    $scope.deleteMarkItem = function (item) {
+		console.log(item);
+		if(item.type == "highlight") {
+		    $scope.cfiRange = item.cfi;
+		    $scope.deleteHighlight();
+		}
+		else if (item.type == "bookmark") {
+		    $scope.currentPosition = item;
+		    $scope.deleteBookmark();
+		}
+		else if (item.type == "note") {
+		    $scope.cfiRange = item.cfi;
+		    $scope.deleteNote();
+		}
+
+		$scope.doSidebar();
 	    };
 
 	    $scope.gotoMarkItem = function (bookmark) {
@@ -548,7 +584,7 @@ angular.module('epubreader', [])
 			    // Google search need something to hang their hat on.
 			    $scope.lastSavedCfiRange = $scope.cfiRange; 
 			    let savedCFI = $scope.cfiRange;
-			    let highlight = $scope.markFromCfi(savedCFI, range, 'highlight'); 
+			    let highlight = $scope.markFromCfi(savedCFI, range, 'highlight', false); 
 			    $scope.state.highlights.push(highlight);
 
 			    $scope.updateGlobalLocationsList();
@@ -566,8 +602,11 @@ angular.module('epubreader', [])
 				$scope.contents.window.getSelection().removeAllRanges();
 			    }
 			    
+			    var aHighlight = $scope.markFromCfi(highlight.cfi, range, 'highlight', false);
+
 			    // generate event to pass out to generic angular app watching for it. 
-			    $rootScope.$broadcast('epubReaderHighlightSave', {text: highlight.text, cfi: highlight.cfi, range: range});
+			    // $rootScope.$broadcast('epubReaderHighlightSave', {text: highlight.text, cfi: highlight.cfi, range: range});
+			    $rootScope.$broadcast('epubReaderHighlightSave', aHighlight);
 			});
 		    }
 		}
@@ -576,14 +615,20 @@ angular.module('epubreader', [])
 	    };
 
 	    // type = {highlight|bookmark}
-	    $scope.markFromCfi = function (cfi, range, type) {
+	    $scope.markFromCfi = function (cfi, range, type, annotationText) {
 		var text = range ? (range.toString() || range.startContainer.data.substring(0, 200)) : "<no text>";
 		let spineItem = $scope.state.book.spine.get(cfi);
 		let navItem = $scope.state.book.navigation.get(spineItem.href);
 		if(!navItem) navItem = {label: ""};
 		if( (type == 'bookmark') && (navItem.label.length > text.length)) text = navItem.label;
+		
+		var perc = $scope.state.book.locations.percentageFromCfi(cfi);
+		perc = perc ? 100 * parseFloat(perc.toFixed(2)) : 0;
+		var dogear = `Chapter ${navItem.label} (${perc}%)`;
 
-		let hl = {type: type, text: text, chapterLabel: navItem.label, cfi: cfi};
+		console.log('consider removing extra location vars and fix rounding');
+		let hl = {type: type, cfi: cfi, text: text, annotationText: annotationText, dogeartext: dogear, range: range,
+			  chapterLabel: navItem.label, positionPercentage: perc};
 		return hl;
 	    }
 			    
@@ -618,24 +663,8 @@ angular.module('epubreader', [])
 	    };
 
 	    $scope.loadHighlightsfromStorage = function () {
-		if($scope.useLocalStorage) {
-		    let stored = localStorage.getItem(`${$scope.state.book.key()}:highlights`);
-		    if(stored) $scope.state.highlights = JSON.parse(stored);
-		    else $scope.state.highlights = [];
-		}
-
-		$scope.state.highlights.forEach(highlight => {
-		    var cfiRange = highlight.cfi; 
-		    $scope.state.rendition.annotations.highlight(cfiRange, {}, (e) => {
-			$timeout(function () {
-			    $scope.cfiRange = cfiRange;
-			    $scope.showHighlightMenu(); 
-			    e.stopPropagation();
-			}, 200);
-		    } /* , 'annotated-highlight' */);
-		});
-
-		// merge passed in highlights
+	
+		// use passed in highlights
 		if ($scope.highlightArray) {
 		    $scope.highlightArray.forEach(hl => {
 			var hIndex = $scope.state.highlights.findIndex(function (element) { return (element.cfi == hl.cfi); });
@@ -643,20 +672,37 @@ angular.module('epubreader', [])
 			    $scope.state.book.getRange(hl.cfi).then(function (range) {					// fill in all the other fields so only cfi needs be stored.
 				let newhl = $scope.markFromCfi(hl.cfi, range, 'highlight');
 				if('annotationText' in hl) {
+				    newhl.type = 'note';
 				    newhl.annotationText = hl.annotationText;
-				    $scope.displayAnnotationIcon(newhl);
 				}
+				if('id' in hl) newhl.id = hl.id;
 				
 				$scope.state.highlights.push(newhl);
-				$scope.state.rendition.annotations.highlight(newhl.cfi, {}, (e) => {
-				    $timeout(function () {
-					$scope.cfiRange = newhl.cfi;
-					$scope.showHighlightMenu(); 
-					e.stopPropagation();
-				    }, 200);
-				} /* , 'annotated-highlight' */);
+				if($scope.useLocalStorage) $scope.saveHighlightstoStorage();				// store the extra vars we just added.
 			    });
 			}
+			else {
+			    var existingHL =  $scope.state.highlights[hIndex];						// restore ID if present; the stored version may not have it
+			    if('id' in hl) existingHL.id = hl.id;
+			}
+		    });
+		}
+		else {													// if no passed in highlights, use local storage
+		    if($scope.useLocalStorage) {
+			let stored = localStorage.getItem(`${$scope.state.book.key()}:highlights`);
+			if(stored) $scope.state.highlights = JSON.parse(stored);
+			else $scope.state.highlights = [];
+		    }
+		    
+		    $scope.state.highlights.forEach(highlight => {
+			var cfiRange = highlight.cfi; 
+			$scope.state.rendition.annotations.highlight(cfiRange, {}, (e) => {
+			    $timeout(function () {
+				$scope.cfiRange = cfiRange;
+				$scope.showHighlightMenu(); 
+				e.stopPropagation();
+			    }, 200);
+			} /* , 'annotated-highlight' */);
 		    });
 		}
 	    };
@@ -767,7 +813,7 @@ angular.module('epubreader', [])
 	    $scope.createNote = function () {
 		var theHighlight = $scope.state.highlights.find(function (element) { return (element.cfi == $scope.cfiRange); });
 		if(theHighlight && theHighlight.annotationText) {
-		    $scope.post = {message:  theHighlight.annotationText}; 						// load up the textarea editor with current value.
+		    $scope.post = {message: theHighlight.annotationText}; 						// load up the textarea editor with current value.
 		}
 
 		$ionicModal.fromTemplateUrl('templates/noteEditor.html', {scope: $scope, animation: 'slide-in-up'})
@@ -790,12 +836,17 @@ angular.module('epubreader', [])
 			    $scope.displayAnnotationIcon(theHighlight);
 			    delete post.message;
 			    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
-				$rootScope.$broadcast('epubReaderAnnotationSave', { type: 'highlight', cfi: $scope.cfiRange, text: theHighlight.text, annotationText: theHighlight.annotationText, range: range});
+				let annotation = $scope.markFromCfi($scope.cfiRange, range, 'note', theHighlight.annotationText); 
+				if('id' in theHighlight) annotation.id = theHighlight.id;
+				$rootScope.$broadcast('epubReaderAnnotationSave', annotation);
 			    });
 			}
 			else {
 			    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
-				$rootScope.$broadcast('epubReaderAnnotationDelete', { type: 'highlight', cfi: $scope.cfiRange, text: theHighlight.text, annotationText: theHighlight.annotationText, range: range});
+				let annotation = $scope.markFromCfi($scope.cfiRange, range, 'note', theHighlight.annotationText); 
+				if('id' in theHighlight) annotation.id = theHighlight.id;
+
+				$rootScope.$broadcast('epubReaderAnnotationDelete', annotation);
 				delete theHighlight.annotationText;
 				$scope.deleteAnnotationIcon(theHighlight);
 			    });
@@ -814,14 +865,18 @@ angular.module('epubreader', [])
 		    $ionicPopup.confirm({title: 'Delete Note?', template: 'Are you sure you want to delete this note?'}).then(function(res) {
 			if(res) {
 			    $scope.state.book.getRange($scope.cfiRange).then(function (range) {
-				$rootScope.$broadcast('epubReaderAnnotationDelete', {text: theHighlight.text, annotationText: theHighlight.annotationText, cfi: $scope.cfiRange, range: range});
+				let annotation = $scope.markFromCfi($scope.cfiRange, range, 'note', theHighlight.annotationText); 
+				if('id' in theHighlight) annotation.id = theHighlight.id;
+
+				$rootScope.$broadcast('epubReaderAnnotationDelete', annotation);
 				delete theHighlight.annotationText;
+				theHighlight.type = 'highlight';
 				$timeout(function () { 
 				    $scope.deleteAnnotationIcon(theHighlight);
 				}, 100);
+
+				$scope.saveHighlightstoStorage();
 			    });
-			    
-			    $scope.saveHighlightstoStorage();
 			}
 		    });
 		}
@@ -841,9 +896,7 @@ angular.module('epubreader', [])
 	    // add an icon to the range display indicating there's an annotation. Hacky: it hacks up the DOM for the Epub; in theory I should probably fork epub.js and include all of this in
 	    // the rendering engine, but I'm hesitant to disturb epub.js.
 	    $scope.displayAnnotationIcons = function () {
-		
-		// erase all before redisplaying.
-		$scope.deleteAnnotationIcons();		
+		$scope.deleteAnnotationIcons();										// erase all before redisplaying.
 		$scope.state.highlights.forEach(h => {
 		    $scope.displayAnnotationIcon(h);
 		});
@@ -882,6 +935,8 @@ angular.module('epubreader', [])
 				path.classList.add('annotation-indicator');
 				g.appendChild(path);
 			    }
+			}
+			else {
 			}
 		    }
 		}
@@ -951,6 +1006,7 @@ angular.module('epubreader', [])
 
 	    // store position in local storage so we come back here on reload.
 	    $scope.onRenditionRelocatedSavePos = function (event) {
+
 		if($scope.useLocalStorage) localStorage.setItem(`${$scope.state.book.key()}:pos`, event.start.cfi);
 		$scope.currentPosition = event.start;
 
@@ -980,13 +1036,29 @@ angular.module('epubreader', [])
 		$rootScope.$broadcast('epubReaderCurrentLocation', {position: event.start.cfi});
 	    };
 	    
-	    // reload location on reload of book
-	    $scope.onRenditionStartedRestorePos = function (/* event */) {
+	    $scope.onLoadRestorePos = function (/* event */) {
 		try {
-		    if($scope.useLocalStorage) {
+		    if(!$scope.startLocation && $scope.useLocalStorage) {
 			let stored = localStorage.getItem(`${$scope.state.book.key()}:pos`);
-			// console.log("goto storedPos", stored);
-			if (stored) $scope.state.rendition.display(stored);
+			if(stored) $scope.startLocation = stored;
+		    }
+			
+		    if($scope.startLocation) {
+			$scope.state.rendition.display($scope.startLocation).then(function () {
+			    // timeout here is to give the page / epub time to load before trying to render markers/highlights at appropriate page location. display event comes too fast.
+			    $timeout(function () { $scope.displayAnnotations(); }, 500);
+			});
+
+			// for some reason, not sure why, need this second display to get things to display in correct locations.
+			$scope.state.rendition.display($scope.startLocation).then(function () {
+			    // timeout here is to give the page / epub time to load before trying to render markers/highlights at appropriate page location. display event comes too fast.
+			    $timeout(function () { $scope.displayAnnotations(); }, 500);
+			});
+		    }
+		    else {
+			$scope.state.rendition.display().then(function () {
+			    $timeout(function () { $scope.displayAnnotations(); }, 500);
+			});
 		    }
 		} catch (err) {
 		    $scope.fatal("error restoring position", err);
@@ -1106,6 +1178,11 @@ angular.module('epubreader', [])
 	    
 	    // on paging/relocation, wipe the dictionary and update the active TOC entry.
 	    $scope.onRenditionRelocated = function (event) {
+		$scope.onRenditionRelocatedUpdateIndicators(event);
+		$scope.onRenditionRelocatedSavePos(event);
+		$scope.displayAnnotationIcons(event);									// render events come too soon; so redraw icons every page. ick.
+
+
 		try {$scope.doDictionary(null);} catch (err) {}
 		try {
 		    $scope.navigation.toc.forEach(function (i, item) {
@@ -1365,11 +1442,14 @@ angular.module('epubreader', [])
 		// can stream from a url like this:
 		// ufn = "https://standardebooks.org/ebooks/walter-scott/ivanhoe/dist/walter-scott_ivanhoe.epub";
 		if (ufn) {
-		    fetch(ufn).then(resp => {
-			if (resp.status != 200) throw new Error("response status: " + resp.status.toString() + " " + resp.statusText);
-		    }).catch(err => {
-			$scope.fatal("error loading book", err, false);
-		    });
+		    // ufn might be a byte stream now...
+		    if(typeof ufn === 'string') {
+			fetch(ufn).then(resp => {
+			    if (resp.status != 200) throw new Error("response status: " + resp.status.toString() + " " + resp.statusText);
+			}).catch(err => {
+			    $scope.fatal("error loading book", err, false);
+			});
+		    }
 
 		    $scope.doBook(ufn);
 		}

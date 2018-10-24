@@ -47,10 +47,19 @@
 	      <div ng-switch on="item.type">
 		<div ng-switch-when="highlight" style="background: rgba(255, 255, 0, 0.4);">
 		  <span><i class="icon custom-icon-small ion-marker">                                   </i>{{item.type}}
-		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}</div>
+		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}
+		    <a style="float: right; padding-right: 5px;" class="icon ion-close" ng-click="deleteMarkItem(item)"></a>
+		  
+		</div>
+		<div ng-switch-when="note" style="background: rgba(255, 255, 0, 0.4);">
+		  <span><i class="icon custom-icon-small ion-marker">                                   </i>{{item.type}}
+		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}
+		    <a style="float: right; padding-right: 5px;" class="icon ion-close" ng-click="deleteMarkItem(item)"></a>
+		</div>
 		<div ng-switch-when="bookmark">
 		  <span><i style="margin: 0 10px 0px 10px;" class="icon custom-icon-small ion-bookmark"></i>{{item.type}}
-		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}</div>
+		    <span style="font-size: xxx-large;"> &bull; </span> {{item.chapterLabel}}
+		    <a style="float: right; padding-right: 5px;" class="icon ion-close" ng-click="deleteMarkItem(item)"></a></div>
 	      </div>
 
 	      <div class="bookmark-entry">

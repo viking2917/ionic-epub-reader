@@ -1,12 +1,11 @@
-<ion-view view-title="Dashboard" hide-nav-bar="true ">
-
-    <ion-pane ng-controller="ReaderCtrl">
+<ion-view view-title="Reader" hide-nav-bar="true">
+    <ion-pane>
       <ion-content overflow-scroll="true">
-        <!-- <epubreader use-local-storage="true" src="https://standardebooks.org/ebooks/rafael-sabatini/captain-blood/dist/rafael-sabatini_captain-blood.epub"></epubreader> -->
-        <epubreader src-doc="params.epubUrl" 
+	<epubreader src-doc="params.epubUrl" 
 		    highlight-array="params.highlightArray"
 		    bookmark-array="params.bookmarkArray"
-		    use-local-storage="false"></epubreader>
+                    start-location="params.startlocation"
+		    use-local-storage="true"></epubreader>
       </ion-content>
     </ion-pane>
 </ion-view>
