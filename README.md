@@ -56,6 +56,11 @@ Modify your index.html file to include the following:
 <script src="js/angularEpubReader.js"></script>
 ```
 
+You will also need to copy the files in the `images` directory to an `images` directory in your project, and the files in the `templates` directory to a `templates` directory in your
+project.
+
+(Yes, this should really be packaged with NPM or something, to avoid all this hackery, but I don't know how :) (yet). 
+
 NOTE: This directive uses a slightly modified version of epub.js, see below.
 
 Include the custom directive in your index.html file, or in a template (see for example the file ```tab-reader.html``` in the example app).
@@ -72,10 +77,11 @@ The directive accepts arguments per the below:
 
 The `<epubreader>` directive accepts arguments:
 
-* `src`: a url pointing to an ePub file to load. If not present, the user is presented with an open file button.
+* `src-doc`: a url pointing to an ePub file to load. If not present, the user is presented with an open file button.
 * `use-local-storage`: true|false, controls whether user data (e.g. bookmarks) are persisted to the browser's localStorage
 * `highlight-array`: optional. An array of highlights to be loaded to the book after load is complete. highlights should consist of a cfi field, and optionally an annotationText field for annotations. see `controllers.js` for an example.  
 *  `bookmark-array`: optional. An array of bookmarks to be loaded to the book after load is complete. see `controllers.js` for an example. 
+*  `start-location`: optional. A CFI that indicates where the book should be positioned after loaded. Useful if you want to (for example) launch the reader to a particular bookmark or annotation
 
 #### Add module "epubreader" as dependency
 
@@ -114,6 +120,8 @@ bookmark:
 	cfi: <canonical fragment identifier for the location>,
 	text: <text from roughly the location of the bookmark>,
 	chapterLabel: <text for chapter / division heading >,
+	dogeartext: <a textual description of the location of this mark, including % of the way through the book>,
+	positionPercentage: <float, % of way through book>
 }
 ```
 
@@ -124,7 +132,9 @@ highlight:
 	type: 'highlight',
 	cfi: <canonical fragment identifier for the location>,
 	text: <the highlighted text>,
-	(optional) annotationText: <text of note added by user>, 
+	(optional) annotationText: <text of note added by user>,
+	dogeartext: <a textual description of the location of this mark, including % of the way through the book>,
+	positionPercentage: <float, % of way through book>
 	range: <browser Range object>
 }
 ```
@@ -145,6 +155,7 @@ The key lifecycle events and their arguments:
 * ```epubReaderPrevPage```: issued whenever (prev) paging occurs; carries the position BEFORE the page change as argument
 * ```epubReaderSetLocation```: issued when the user manually sets a location (page) number. Carries the target position as an argument, in the form of a structure containing  {location: <int>, cfi: cfi, bookLength: <int>}
 * ```epubReaderTextSelected```: issued whenever the user selects text, before a highlight is created; carries as argument a structure containing {text, cfi, range} fields.
+* ```epubReaderExit```: issued when the user exits the reader.
 
 The example app shows how to monitors these events, e.g.:
 
