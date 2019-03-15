@@ -18,8 +18,10 @@ angular.module('readerDemo', ['ionic', 'epubreader', 'readerDemo.controllers',])
 	// least on iOS. It's a dead giveaway that an app is using a Web View. However, it's sometimes
 	// useful especially with forms, though we would prefer giving the user a little more room
 	// to interact with the app.
-	if (window.cordova && window.Keyboard) {
-	    window.Keyboard.hideKeyboardAccessoryBar(true);
+      
+  if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
+	    cordova.plugins.Keyboard.hideFormAccessoryBar(true);
+	    cordova.plugins.Keyboard.disableScroll(true);
 	}
 	
 	if (window.StatusBar) {
