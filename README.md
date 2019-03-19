@@ -61,6 +61,13 @@ project.
 
 (Yes, this should really be packaged with NPM or something, to avoid all this hackery, but I don't know how :) (yet). 
 
+
+Be sure to include `<allow-navigation href="*" />` in your config.xml, or the whitelist plugin may block download of the ePub files.
+
+(some people have reported they also needed to include something to the effect of 
+`<meta http-equiv="Content-Security-Policy"
+		content="default-src gap://ready file://* blob: *; style-src 'self' blob: http://* https://* 'unsafe-inline'; script-src 'self' http://* https://* 'unsafe-inline' 'unsafe-eval'">`) in their index.html.
+
 NOTE: This directive uses a slightly modified version of epub.js, see below.
 
 Include the custom directive in your index.html file, or in a template (see for example the file ```tab-reader.html``` in the example app).
