@@ -70,9 +70,13 @@ angular.module('readerDemo.controllers', [])
 .controller('DashCtrl', function($scope, $state) {
 
     $scope.doTreasureIsland = function (includeAnnotations) {
+	// var epub = 'https://standardebooks.org/ebooks/robert-louis-stevenson/treasure-island/milo-winter/dist/robert-louis-stevenson_treasure-island.epub';
+	// var epub = "https://s3-us-west-2.amazonaws.com/readerdemo/www/robert-louis-stevenson_treasure-island.epub";
+	var epub = "https://standardebooks.org/ebooks/robert-louis-stevenson/treasure-island/downloads/robert-louis-stevenson_treasure-island.epub";
+	
 	if(!includeAnnotations) {
 	    console.log("    state.go('tab.reader');    ");
-	    $state.go('tab.reader', {epubUrl: 'https://standardebooks.org/ebooks/robert-louis-stevenson/treasure-island/milo-winter/dist/robert-louis-stevenson_treasure-island.epub'} );
+	    $state.go('tab.reader', {epubUrl: epub} );
 	}
 	else {
 	    let hls = [{cfi: "epubcfi(/6/14[chapter-1.xhtml]!/4/2[part-1]/2[chapter-1]/8/2,/2/1:1,/6/1:29)"},
@@ -84,7 +88,7 @@ angular.module('readerDemo.controllers', [])
 	    
 	    console.log("    state.go('tab.reader');    ");
 	    $state.go('tab.reader', 
-		      { epubUrl: 'https://standardebooks.org/ebooks/robert-louis-stevenson/treasure-island/milo-winter/dist/robert-louis-stevenson_treasure-island.epub', 
+		      { epubUrl: epub, 
 			highlightArray: hls, 
 			bookmarkArray: bms} );
 	};
